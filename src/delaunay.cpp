@@ -26,7 +26,7 @@ typedef CDT::Triangulation<double> Triangulation;
 // }
 
 // [[Rcpp::export]]
-arma::umat Rcpp_delaunay(const arma::mat & points){
+Rcpp::List Rcpp_delaunay(const arma::mat & points){
   Triangulation cdt(CDT::VertexInsertionOrder::AsProvided);
   // insert vertices
   const size_t npoints = points.n_rows;
@@ -37,17 +37,31 @@ arma::umat Rcpp_delaunay(const arma::mat & points){
   }
   cdt.insertVertices(vertices);
   cdt.eraseSuperTriangle();
-  // output
+  //// output
+  // triangles
   const CDT::TriangleVec triangles = cdt.triangles;
   const size_t ntriangles = triangles.size();
-  arma::umat out(ntriangles, 3);
+  arma::umat out_triangles(ntriangles, 3);
   for(size_t i = 0; i < ntriangles; ++i){
     const CDT::VerticesArr3 trgl = triangles[i].vertices;
-    out(i, 0) = trgl[0];
-    out(i, 1) = trgl[1];
-    out(i, 2) = trgl[2];
+    out_triangles(i, 0) = trgl[0];
+    out_triangles(i, 1) = trgl[1];
+    out_triangles(i, 2) = trgl[2];
   }
-  return out + 1;
+  // all edges
+  CDT::EdgeUSet allEdges = CDT::extractEdgesFromTriangles(triangles);
+  arma::umat out_alledges(allEdges.size(), 2);
+  std::unordered_set<Edge> :: iterator it;
+  size_t i = 0;
+  for(it = allEdges.begin(); it != allEdges.end(); it++){
+    const Edge edge = *it;
+    out_alledges(i, 0) = CDT::edge_get_v1(edge);
+    out_alledges(i, 1) = CDT::edge_get_v2(edge);
+    i++;
+  }
+  //
+  return Rcpp::List::create(Rcpp::Named("triangles") = out_triangles + 1,
+                            Rcpp::Named("allEdges") = out_alledges + 1);
 }
 
 // void* operator new (size_t size, const unsigned & v1, const unsigned & v2) {
