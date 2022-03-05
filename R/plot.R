@@ -7,16 +7,20 @@ makeTriangle <- function(vertices, indices){
 #'
 #' @param del an output of \code{\link{delaunay}} without constraints 
 #'   (\code{edges=NULL})
-#' @param border the color of the borders of the triangles; \code{NULL} for
-#'   no borders
+#' @param col_edges the color of the edges of the triangles; \code{NULL} for
+#'   no edges
+#' @param col_borders the color of the border edges for a constrained 
+#'   Delaunay tessellation; \code{NULL} for no border edges
 #' @param color controls the filling colors of the triangles, either
 #'   \code{FALSE} for no color, \code{"random"} to use
 #'   \code{\link[randomcoloR]{randomColor}}, or \code{"distinct"} to use
 #'   \code{\link[randomcoloR]{distinctColorPalette}}
 #' @param hue,luminosity if \code{color = "random"}, these arguments are passed
 #'   to \code{\link[randomcoloR]{randomColor}}
-#' @param lty,lwd graphical parameters
-#' @param ... arguments passed to \code{\link{plot}}
+#' @param lty_edges,lwd_edges graphical parameters for the edges of the triangles
+#' @param lty_borders,lwd_borders graphical parameters for the border edges in 
+#'   the case of a constrained Delaunay tessellation
+#' @param ... arguments passed to \code{\link{plot}} for the vertices
 #'
 #' @return No value, just renders a 2D plot.
 #' @export
@@ -39,8 +43,10 @@ makeTriangle <- function(vertices, indices){
 #' )
 #' par(opar)
 plotDelaunay <- function(
-  del, border = "black", color = "distinct", hue = "random",
-  luminosity = "light", lty = par("lty"), lwd = par("lwd"), ...
+  del, col_edges = "black", col_borders = "red", color = "distinct", 
+  hue = "random", luminosity = "light", 
+  lty_edges = par("lty"), lwd_edges = par("lwd"), 
+  lty_borders = par("lty"), lwd_borders = par("lwd"), ...
 ){
   if(!inherits(del, "delaunay")){
     stop(
@@ -70,15 +76,29 @@ plotDelaunay <- function(
       polygon(triangle, border = NA, col = colors[i])
     }
   }
-  if(!is.null(border)){
+  if(!is.null(col_edges)){
     edges <- del[["allEdges"]]
-    for(i in 1:nrow(edges)){
+    for(i in 1L:nrow(edges)){
       edge <- edges[i, ]
       p0 <- vertices[edge[1L], ]
       p1 <- vertices[edge[2L], ]
       segments(
-        p0[1L], p0[2L], p1[1L], p1[2L], col = border, lty = lty, lwd = lwd
+        p0[1L], p0[2L], p1[1L], p1[2L], col = col_edges, 
+        lty = lty_edges, lwd = lwd_edges
       )
     }
   }
+  if(isTRUE(attr(del, "constrained"))){
+    edges <- del[["borderEdges"]]
+    for(i in 1L:nrow(edges)){
+      edge <- edges[i, ]
+      p0 <- vertices[edge[1L], ]
+      p1 <- vertices[edge[2L], ]
+      segments(
+        p0[1L], p0[2L], p1[1L], p1[2L], col = col_borders, 
+        lty = lty_borders, lwd = lwd_borders
+      )
+    }
+  }
+  invisible(NULL)
 }

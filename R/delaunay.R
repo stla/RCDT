@@ -32,6 +32,30 @@
 #'   del, xlab = NA, ylab = NA, asp = 1, color = "random", luminosity = "dark"
 #' )
 #' par(opar)
+#' 
+#' # a constrained Delaunay triangulation ####
+#' # points
+#' nangles <- 12L
+#' angles <- seq(0, 2*pi, length.out = nangles+1L)[-1L]
+#' points <- cbind(cos(angles), sin(angles))
+#' points <- rbind(points, points/1.5)
+#' 
+#' # constraint edges
+#' indices <- 1L:nangles
+#' edges <- cbind(
+#'   indices,
+#'   c(indices[-1L], indices[1L])
+#' ) 
+#' edges <- rbind(edges, edges + nangles)
+#' 
+#' # Delaunay
+#' del <- delaunay(points, edges) 
+#' 
+#' # plot
+#' opar <- par(mar = c(1, 1, 1, 1))
+#' plotDelaunay(del, color=FALSE, lwd_borders = 2, asp = 1, 
+#'              axes = FALSE, xlab = NA, ylab = NA)
+#' par(opar)
 delaunay <- function(points, edges = NULL){
   if(!is.matrix(points) || !is.numeric(points) || ncol(points) != 2L){
     stop(
@@ -68,6 +92,7 @@ delaunay <- function(points, edges = NULL){
       stop("There are some invalid edges.", call. = TRUE)
     }
     out <- Rcpp_constrained_delaunay(points, edges)
+    attr(out, "constrained") <- TRUE
   }
   attr(out, "vertices") <- points
   class(out) <- "delaunay"

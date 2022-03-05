@@ -1,15 +1,18 @@
 Package: RCDT
 Type: Package
-Title: Fast 2D Delaunay triangulation
+Title: Fast 2D Delaunay Triangulation
 Version: 1.0
 Date: 2022-03-05
 Authors@R: c(
   person("Stéphane", "Laurent", role=c("aut","cre"), email="laurent_step@outlook.fr"),
-  person("Artem", "Amirkhanov", role="cph", comment="'CDT'"))
+  person("Artem", "Amirkhanov", role="cph", comment="CDT library"))
 Maintainer: Stéphane Laurent <laurent_step@outlook.fr>
-Description: More about what it does (maybe more than one line)
+Description: Performs 2D Delaunay triangulation, constrained or unconstrained.
 Encoding: UTF-8
 License: GPL-3
-Imports: Rcpp (>= 1.0.8)
+Imports: Rcpp (>= 1.0.8), randomcoloR, graphics
+Suggest: unifomly
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 7.1.2
+URL: https://github.com/stla/RCDT
+BugReports: https://github.com/stla/RCDT/issues
