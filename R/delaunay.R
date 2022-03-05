@@ -115,3 +115,33 @@ delaunay <- function(points, edges = NULL){
   class(out) <- "delaunay"
   out
 }
+
+#' @title Area of Delaunay trianguation
+#' @description Computes the area of a Delaunay triangulation.
+#'
+#' @param del an output of \code{\link{delaunay}}
+#'
+#' @return A number, the area of the Delaunay triangulation.
+#' @export
+#'
+#' @examples library(RCDT)
+#' set.seed(666)
+#' library(uniformly)
+#' square <- rbind(
+#'   c(-1, 1), c(1, 1), c(1, -1), c(-1, -1)
+#' )
+#' pts <- rbind(square, runif_in_cube(8L, d = 2L))
+#' del <- delaunay(pts)
+#' delaunayArea(del)
+delaunayArea <- function(del){
+  stopifnot(inherits(del, "delaunay"))
+  triangles <- del[["triangles"]]
+  vertices <- attr(del, "vertices")
+  ntriangles <- nrow(triangles)
+  areas <- numeric(ntriangles)
+  for(i in 1L:ntriangles){
+    points <- vertices[triangles[i, ], ]
+    areas[i] <- triangleArea(points[1L, ], points[2L, ], points[3L, ])
+  }
+  sum(areas)
+}
