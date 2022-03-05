@@ -56,6 +56,23 @@
 #' plotDelaunay(del, color = "yellow", lwd_borders = 2, asp = 1, 
 #'              axes = FALSE, xlab = NA, ylab = NA)
 #' par(opar)
+#' 
+#' # another constrained Delaunay triangulation: a face ####
+#' V <- read.table(
+#'   system.file("extdata", "face_vertices.txt", package = "RCDT")
+#' )
+#' E <- read.table(
+#'   system.file("extdata", "face_edges.txt", package = "RCDT")
+#' )
+#' del <- delaunay(
+#'   points = as.matrix(V)[, c(2L, 3L)], edges = as.matrix(E)[, c(2L, 3L)]
+#' )
+#' opar <- par(mar = c(1, 1, 1, 1))
+#' plotDelaunay(
+#'   del, col_edges = NULL, color = "salmon", col_borders = "black", asp = 1,
+#'   axes = FALSE, xlab = NA, ylab = NA
+#' )
+#' par(opar)
 delaunay <- function(points, edges = NULL){
   if(!is.matrix(points) || !is.numeric(points) || ncol(points) != 2L){
     stop(
