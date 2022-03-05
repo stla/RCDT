@@ -42,3 +42,6 @@ vignettes/*.pdf
 /src/*.dll
 /src/*.so
 /src/*.o
+
+# other
+/inst/trash/

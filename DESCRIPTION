@@ -1,0 +1,15 @@
+Package: RCDT
+Type: Package
+Title: Fast 2D Delaunay triangulation
+Version: 1.0
+Date: 2022-03-05
+Authors@R: c(
+  person("Stéphane", "Laurent", role=c("aut","cre"), email="laurent_step@outlook.fr"),
+  person("Artem", "Amirkhanov", role="cph", comment="'CDT'"))
+Maintainer: Stéphane Laurent <laurent_step@outlook.fr>
+Description: More about what it does (maybe more than one line)
+Encoding: UTF-8
+License: GPL-3
+Imports: Rcpp (>= 1.0.8)
+LinkingTo: Rcpp, RcppArmadillo
+RoxygenNote: 7.1.2
