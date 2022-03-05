@@ -3,6 +3,7 @@
 export(delaunay)
 export(plotDelaunay)
 importFrom(Rcpp,evalCpp)
+importFrom(gplots,col2hex)
 importFrom(graphics,par)
 importFrom(graphics,plot)
 importFrom(graphics,polygon)

@@ -29,9 +29,9 @@ no edges}
 Delaunay tessellation; \code{NULL} for no border edges}
 
 \item{color}{controls the filling colors of the triangles, either
-\code{FALSE} for no color, \code{"random"} to use
-\code{\link[randomcoloR]{randomColor}}, or \code{"distinct"} to use
-\code{\link[randomcoloR]{distinctColorPalette}}}
+\code{FALSE} for no color, a single color, \code{"random"} to get multiple 
+colors with \code{\link[randomcoloR]{randomColor}}, or \code{"distinct"} 
+get multiple colors with \code{\link[randomcoloR]{distinctColorPalette}}}
 
 \item{hue, luminosity}{if \code{color = "random"}, these arguments are passed
 to \code{\link[randomcoloR]{randomColor}}}

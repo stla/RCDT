@@ -10,7 +10,7 @@ Maintainer: Stéphane Laurent <laurent_step@outlook.fr>
 Description: Performs 2D Delaunay triangulation, constrained or unconstrained.
 Encoding: UTF-8
 License: GPL-3
-Imports: Rcpp (>= 1.0.8), randomcoloR, graphics
+Imports: Rcpp (>= 1.0.8), randomcoloR, graphics, gplots
 Suggest: unifomly
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 7.1.2

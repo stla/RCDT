@@ -12,9 +12,9 @@ makeTriangle <- function(vertices, indices){
 #' @param col_borders the color of the border edges for a constrained 
 #'   Delaunay tessellation; \code{NULL} for no border edges
 #' @param color controls the filling colors of the triangles, either
-#'   \code{FALSE} for no color, \code{"random"} to use
-#'   \code{\link[randomcoloR]{randomColor}}, or \code{"distinct"} to use
-#'   \code{\link[randomcoloR]{distinctColorPalette}}
+#'   \code{FALSE} for no color, a single color, \code{"random"} to get multiple 
+#'   colors with \code{\link[randomcoloR]{randomColor}}, or \code{"distinct"} 
+#'   get multiple colors with \code{\link[randomcoloR]{distinctColorPalette}}
 #' @param hue,luminosity if \code{color = "random"}, these arguments are passed
 #'   to \code{\link[randomcoloR]{randomColor}}
 #' @param lty_edges,lwd_edges graphical parameters for the edges of the triangles
@@ -26,6 +26,7 @@ makeTriangle <- function(vertices, indices){
 #' @export
 #' @importFrom randomcoloR randomColor distinctColorPalette
 #' @importFrom graphics plot polygon par segments
+#' @importFrom gplots col2hex
 #'
 #' @examples # random points in a square
 #' set.seed(314)
@@ -63,13 +64,19 @@ plotDelaunay <- function(
   vertices <- attr(del, "vertices")
   plot(vertices, type = "n", ...)
   if(!isFALSE(color)){
-    color <- match.arg(color, c("random", "distinct"))
+    color <- tryCatch({
+      col2hex(color)
+    }, error = function(e){
+      match.arg(color, c("random", "distinct"))
+    })
     triangles <- del[["triangles"]]
     ntriangles <- nrow(triangles)
     if(color == "random"){
       colors <- randomColor(ntriangles, hue = hue, luminosity = luminosity)
-    }else{
+    }else if(color == "distinct"){
       colors <- distinctColorPalette(ntriangles)
+    }else{
+      colors <- rep(color, ntriangles)
     }
     for(i in 1L:ntriangles){
       triangle <- makeTriangle(vertices, triangles[i, ])

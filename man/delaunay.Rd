@@ -63,7 +63,7 @@ del <- delaunay(points, edges)
 
 # plot
 opar <- par(mar = c(1, 1, 1, 1))
-plotDelaunay(del, color=FALSE, lwd_borders = 2, asp = 1, 
+plotDelaunay(del, color = "yellow", lwd_borders = 2, asp = 1, 
              axes = FALSE, xlab = NA, ylab = NA)
 par(opar)
 }
