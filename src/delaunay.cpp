@@ -3,7 +3,7 @@
 // we only include RcppArmadillo.h which pulls Rcpp.h in for us
 #include "RcppArmadillo.h"
 // [[Rcpp::depends(RcppArmadillo)]]
-
+#define NDEBUG
 
 #include "CDT.h"
 
