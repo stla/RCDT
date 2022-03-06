@@ -52,7 +52,7 @@ Plot a 2D Delaunay tessellation.
 \examples{
 # random points in a square
 set.seed(314)
-library(tessellation)
+library(RCDT)
 library(uniformly)
 square <- rbind(
   c(-1, 1), c(1, 1), c(1, -1), c(-1, -1)

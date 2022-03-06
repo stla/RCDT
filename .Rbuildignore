@@ -3,3 +3,4 @@
 ^inst/essais$
 ^inst/trash$
 ^\.github$
+^inst/images$
