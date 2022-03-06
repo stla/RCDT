@@ -60,3 +60,12 @@ delaunayArea(del)
 sqrt(650 - 290*sqrt(5)) / 4 # exact value
 ## [1] 0.3102707
 ```
+
+## License
+
+The ‘RCDT’ package as a whole is distributed under GPL-3 (GNU GENERAL
+PUBLIC LICENSE version 3).
+
+It uses the C++ library [CDT](https://github.com/artem-ogre/CDT). A copy
+of the ‘CDT’ license is provided in the file **LICENSE.note**, and the
+source code of this library can be found in the **src** folder.
