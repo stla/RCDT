@@ -1,3 +1,3 @@
-# RCDT 0.1.0.9000
+# RCDT 1.0.0 (2022-03-06)
 
 * First release.

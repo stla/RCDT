@@ -45,3 +45,4 @@ vignettes/*.pdf
 
 # other
 /inst/trash/
+inst/doc
