@@ -1,16 +1,21 @@
-The ‘RCDT’ package - constrained 2D Delaunay triangulation
-================
+---
+title: The 'RCDT' package - constrained 2D Delaunay triangulation
+output: github_document
+---
 
 <!-- badges: start -->
-
 [![R-CMD-check](https://github.com/stla/RCDT/workflows/R-CMD-check/badge.svg)](https://github.com/stla/RCDT/actions)
 <!-- badges: end -->
 
 ![](https://raw.githubusercontent.com/stla/RCDT/main/inst/images/CDT.png)
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
+```
+
 ## The pentagram
 
-``` r
+```{r}
 # vertices
 R <- sqrt((5-sqrt(5))/10)     # outer radius
 r <- sqrt((25-11*sqrt(5))/10) # circumradius of the inner pentagon
@@ -32,18 +37,18 @@ vertices <- rbind(
 )
 ```
 
-``` r
+```{r}
 # edge indices
 edges <- cbind(1L:10L, c(2L:10L, 1L))
 ```
 
-``` r
+```{r}
 # Delaunay triangulation
 library(RCDT)
 del <- delaunay(vertices, edges)
 ```
 
-``` r
+```{r, eval=FALSE}
 # plot
 opar <- par(mar = c(0, 0, 0, 0))
 plotDelaunay(del, asp = 1, color = "distinct", lwd_borders = 3,
@@ -53,10 +58,8 @@ par(opar)
 
 ![](https://raw.githubusercontent.com/stla/RCDT/main/inst/images/pentagram.png)
 
-``` r
+```{r}
 # area
 delaunayArea(del)
-## [1] 0.3102707
 sqrt(650 - 290*sqrt(5)) / 4 # exact value
-## [1] 0.3102707
 ```

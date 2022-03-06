@@ -4,3 +4,4 @@
 ^inst/trash$
 ^\.github$
 ^inst/images$
+^README\.Rmd$
