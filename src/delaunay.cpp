@@ -99,6 +99,7 @@ Rcpp::List Rcpp_constrained_delaunay(
     // Edges[i] = *edge;
   }
   cdt.insertEdges(Edges);
+  // cdt.eraseSuperTriangle();
   cdt.eraseOuterTrianglesAndHoles();
   //// output
   // triangles
