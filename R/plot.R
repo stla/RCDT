@@ -2,11 +2,11 @@ makeTriangle <- function(vertices, indices){
   vertices[indices, ]
 }
 
-#' @title Plot 2D Delaunay tessellation
-#' @description Plot a 2D Delaunay tessellation.
+#' @title Plot 2D Delaunay triangulation
+#' @description Plot a constrained 2D Delaunay triangulation.
 #'
 #' @param del an output of \code{\link{delaunay}} without constraints 
-#'   (\code{edges=NULL})
+#'   (\code{edges=NULL}) or with constraints
 #' @param col_edges the color of the edges of the triangles; \code{NULL} for
 #'   no edges
 #' @param col_borders the color of the border edges for a constrained 

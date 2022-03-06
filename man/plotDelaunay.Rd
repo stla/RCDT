@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.R
 \name{plotDelaunay}
 \alias{plotDelaunay}
-\title{Plot 2D Delaunay tessellation}
+\title{Plot 2D Delaunay triangulation}
 \usage{
 plotDelaunay(
   del,
@@ -20,7 +20,7 @@ plotDelaunay(
 }
 \arguments{
 \item{del}{an output of \code{\link{delaunay}} without constraints 
-(\code{edges=NULL})}
+(\code{edges=NULL}) or with constraints}
 
 \item{col_edges}{the color of the edges of the triangles; \code{NULL} for
 no edges}
@@ -47,7 +47,7 @@ the case of a constrained Delaunay tessellation}
 No value, just renders a 2D plot.
 }
 \description{
-Plot a 2D Delaunay tessellation.
+Plot a constrained 2D Delaunay triangulation.
 }
 \examples{
 # random points in a square
