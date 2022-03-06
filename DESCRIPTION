@@ -7,7 +7,7 @@ Authors@R: c(
   person("Stéphane", "Laurent", role=c("aut","cre"), email="laurent_step@outlook.fr"),
   person("Artem", "Amirkhanov", role="cph", comment="CDT library"))
 Maintainer: Stéphane Laurent <laurent_step@outlook.fr>
-Description: Performs 2D Delaunay triangulation, constrained or unconstrained. A function to plot the triangulation is provided.
+Description: Performs 2D Delaunay triangulation, constrained or unconstrained, with the help of the C++ library 'CDT'. A function to plot the triangulation is provided.
 Encoding: UTF-8
 License: GPL-3
 Imports: Rcpp (>= 1.0.8), randomcoloR, graphics, gplots
