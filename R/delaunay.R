@@ -14,18 +14,21 @@
 #'  Delaunay tessellation, there is an additional field \strong{borderEdges}, 
 #'  an integer matrix with two columns, providing the indices of the edges 
 #'  given as constraints.
+#'  
+#' @note The triangulation can depend on the order of the points; this is 
+#'   shown in the examples.
 #'
 #' @export
 #'
-#' @examples # random points in a square
+#' @examples library(RCDT)
+#' # random points in a square ####
 #' set.seed(314)
-#' library(RCDT)
 #' library(uniformly)
 #' square <- rbind(
 #'   c(-1, 1), c(1, 1), c(1, -1), c(-1, -1)
 #' )
-#' ptsin <- runif_in_cube(10L, d = 2L)
-#' pts <- rbind(square, ptsin)
+#' pts_in_square <- runif_in_cube(10L, d = 2L)
+#' pts <- rbind(square, pts_in_square)
 #' del <- delaunay(pts)
 #' opar <- par(mar = c(0, 0, 0, 0))
 #' plotDelaunay(
@@ -33,26 +36,46 @@
 #' )
 #' par(opar)
 #' 
-#' # a constrained Delaunay triangulation ####
+#' # the order of the points matters ####
+#' # the Delaunay triangulation is not unique in general; 
+#' #   it can depend on the order of the points
+#' points <- cbind(
+#'   c(1, 2, 1, 3, 2, 1, 4, 3, 2, 1, 4, 3, 2, 4, 3, 4),
+#'   c(1, 1, 2, 1, 2, 3, 1, 2, 3, 4, 2, 3, 4, 3, 4, 4)
+#' )
+#' del <- delaunay(points)
+#' opar <- par(mar = c(0, 0, 0, 0))
+#' plotDelaunay(
+#'   del, xlab = NA, ylab = NA, axes = FALSE, asp = 1, lwd_edges = 2
+#' )
+#' par(opar)
+#' # now we randomize the order of the points
+#' set.seed(666L)
+#' points2 <- points[sample.int(nrow(points)), ]
+#' del2 <- delaunay(points2)
+#' opar <- par(mar = c(0, 0, 0, 0))
+#' plotDelaunay(
+#'   del2, xlab = NA, ylab = NA, axes = FALSE, asp = 1, lwd_edges = 2
+#' )
+#' par(opar)
+#' 
+#' # a constrained Delaunay triangulation: outer and inner dodecagons ####
 #' # points
-#' nangles <- 12L
-#' angles <- seq(0, 2*pi, length.out = nangles+1L)[-1L]
+#' nsides <- 12L
+#' angles <- seq(0, 2*pi, length.out = nsides+1L)[-1L]
 #' points <- cbind(cos(angles), sin(angles))
 #' points <- rbind(points, points/1.5)
-#' 
 #' # constraint edges
-#' indices <- 1L:nangles
-#' edges <- cbind(
-#'   indices,
-#'   c(indices[-1L], indices[1L])
-#' ) 
-#' edges <- rbind(edges, edges + nangles)
-#' 
-#' # Delaunay
+#' indices <- 1L:nsides
+#' edges_outer <- cbind(
+#'   indices, c(indices[-1L], indices[1L])
+#' )
+#' edges_inner <- edges_outer + nsides
+#' edges <- rbind(edges_outer, edges_inner)
+#' # constrained Delaunay triangulation
 #' del <- delaunay(points, edges) 
-#' 
 #' # plot
-#' opar <- par(mar = c(1, 1, 1, 1))
+#' opar <- par(mar = c(0, 0, 0, 0))
 #' plotDelaunay(del, color = "yellow", lwd_borders = 2, asp = 1, 
 #'              axes = FALSE, xlab = NA, ylab = NA)
 #' par(opar)
@@ -67,7 +90,7 @@
 #' del <- delaunay(
 #'   points = as.matrix(V)[, c(2L, 3L)], edges = as.matrix(E)[, c(2L, 3L)]
 #' )
-#' opar <- par(mar = c(1, 1, 1, 1))
+#' opar <- par(mar = c(0, 0, 0, 0))
 #' plotDelaunay(
 #'   del, col_edges = NULL, color = "salmon", col_borders = "black", asp = 1,
 #'   axes = FALSE, xlab = NA, ylab = NA

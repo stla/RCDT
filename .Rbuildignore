@@ -6,3 +6,4 @@
 ^inst/images$
 ^README\.Rmd$
 ^cran-comments\.md$
+^CRAN-SUBMISSION$
