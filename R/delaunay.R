@@ -36,7 +36,7 @@
 #' opar <- par(mar = c(0, 0, 0, 0))
 #' plotDelaunay(
 #'   del, type = "n", xlab = NA, ylab = NA, asp = 1, 
-#'   fillcolor = "random", luminosity = "dark", lty_edges = "dashed"
+#'   fillcolor = "random", luminosity = "light", lty_edges = "dashed"
 #' )
 #' par(opar)
 #' 
@@ -51,7 +51,7 @@
 #' opar <- par(mar = c(0, 0, 0, 0))
 #' plotDelaunay(
 #'   del, type = "p", pch = 19, xlab = NA, ylab = NA, axes = FALSE, 
-#'   asp = 1, lwd_edges = 2
+#'   asp = 1, lwd_edges = 2, lwd_borders = 3
 #' )
 #' par(opar)
 #' # now we randomize the order of the points
@@ -61,7 +61,7 @@
 #' opar <- par(mar = c(0, 0, 0, 0))
 #' plotDelaunay(
 #'   del2, type = "p", pch = 19, xlab = NA, ylab = NA, axes = FALSE, 
-#'   asp = 1, lwd_edges = 2
+#'   asp = 1, lwd_edges = 2, lwd_borders = 3
 #' )
 #' par(opar)
 #' 
@@ -101,8 +101,9 @@
 #' opar <- par(mar = c(0, 0, 0, 0))
 #' plotDelaunay(
 #'   del, type="n", col_edges = NULL, fillcolor = "salmon", 
-#'   col_borders = "black", col_constraints = "purple", asp = 1, 
-#'   axes = FALSE, xlab = NA, ylab = NA
+#'   col_borders = "black", col_constraints = "purple", 
+#'   lwd_borers = 3, lwd_constraints = 3,
+#'   asp = 1, axes = FALSE, xlab = NA, ylab = NA
 #' )
 #' par(opar)
 delaunay <- function(points, edges = NULL){

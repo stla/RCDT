@@ -8,13 +8,16 @@ plotDelaunay(
   del,
   col_edges = "black",
   col_borders = "red",
-  color = "distinct",
+  col_constraints = "green",
+  fillcolor = "distinct",
   hue = "random",
   luminosity = "light",
   lty_edges = par("lty"),
   lwd_edges = par("lwd"),
   lty_borders = par("lty"),
   lwd_borders = par("lwd"),
+  lty_constraints = par("lty"),
+  lwd_constraints = par("lwd"),
   ...
 )
 }
@@ -22,47 +25,107 @@ plotDelaunay(
 \item{del}{an output of \code{\link{delaunay}} without constraints 
 (\code{edges=NULL}) or with constraints}
 
-\item{col_edges}{the color of the edges of the triangles; \code{NULL} for
-no edges}
+\item{col_edges}{the color of the edges of the triangles which are not
+border edges nor constraint edges; \code{NULL} for no color}
 
-\item{col_borders}{the color of the border edges for a constrained 
-Delaunay tessellation; \code{NULL} for no border edges}
+\item{col_borders}{the color of the border edges; note that the border
+edges can contain the constraint edges for a constrained
+Delaunay triangulation; \code{NULL} for no color}
 
-\item{color}{controls the filling colors of the triangles, either
-\code{FALSE} for no color, a single color, \code{"random"} to get multiple 
-colors with \code{\link[randomcoloR]{randomColor}}, or \code{"distinct"} 
+\item{col_constraints}{for a constrained Delaunay triangulation, the color
+of the constraint edges which are not border edges;
+\code{NULL} for no color}
+
+\item{fillcolor}{controls the filling colors of the triangles, either
+\code{NULL} for no color, a single color, \code{"random"} to get multiple
+colors with \code{\link[randomcoloR]{randomColor}}, or \code{"distinct"}
 get multiple colors with \code{\link[randomcoloR]{distinctColorPalette}}}
 
 \item{hue, luminosity}{if \code{color = "random"}, these arguments are passed
 to \code{\link[randomcoloR]{randomColor}}}
 
-\item{lty_edges, lwd_edges}{graphical parameters for the edges of the triangles}
+\item{lty_edges, lwd_edges}{graphical parameters for the edges which are not
+border edges nor constraint edges}
 
-\item{lty_borders, lwd_borders}{graphical parameters for the border edges in 
-the case of a constrained Delaunay tessellation}
+\item{lty_borders, lwd_borders}{graphical parameters for the border edges}
 
-\item{...}{arguments passed to \code{\link{plot}} for the vertices}
+\item{lty_constraints, lwd_constraints}{in the case of a constrained Delaunay
+triangulation, graphical parameters for the constraint edges which are
+not border edges}
+
+\item{...}{arguments passed to \code{\link{plot}} for the vertices, such as
+\code{type="n"}, \code{asp=1}, \code{axes=FALSE}, etc}
 }
 \value{
 No value, just renders a 2D plot.
 }
 \description{
-Plot a constrained 2D Delaunay triangulation.
+Plot a constrained or unconstrained 2D Delaunay triangulation.
 }
 \examples{
-# random points in a square
-set.seed(314)
 library(RCDT)
-library(uniformly)
+# random points in a square
 square <- rbind(
   c(-1, 1), c(1, 1), c(1, -1), c(-1, -1)
 )
-ptsin <- runif_in_cube(10L, d = 2L)
-pts <- rbind(square, ptsin)
+library(uniformly)
+set.seed(314)
+pts_in_square <- runif_in_cube(10L, d = 2L)
+pts <- rbind(square, pts_in_square)
 d <- delaunay(pts)
 opar <- par(mar = c(0, 0, 0, 0))
 plotDelaunay(
-  d, xlab = NA, ylab = NA, asp = 1, color = "random", luminosity = "dark"
+  d, type = "n", xlab = NA, ylab = NA, axes = FALSE, asp = 1, 
+  fillcolor = "random", luminosity = "dark", lwd_borders = 3
 )
 par(opar)
+
+# a constrained Delaunay triangulation: pentagram ####
+# vertices
+R <- sqrt((5-sqrt(5))/10)     # outer circumradius
+r <- sqrt((25-11*sqrt(5))/10) # circumradius of the inner pentagon
+k <- pi/180 # factor to convert degrees to radians
+X <- R * vapply(0L:4L, function(i) cos(k * (90+72*i)), numeric(1L))
+Y <- R * vapply(0L:4L, function(i) sin(k * (90+72*i)), numeric(1L))
+x <- r * vapply(0L:4L, function(i) cos(k * (126+72*i)), numeric(1L))
+y <- r * vapply(0L:4L, function(i) sin(k * (126+72*i)), numeric(1L))
+vertices <- rbind(
+  c(X[1L], Y[1L]),
+  c(x[1L], y[1L]),
+  c(X[2L], Y[2L]),
+  c(x[2L], y[2L]),
+  c(X[3L], Y[3L]),
+  c(x[3L], y[3L]),
+  c(X[4L], Y[4L]),
+  c(x[4L], y[4L]),
+  c(X[5L], Y[5L]),
+  c(x[5L], y[5L])
+)
+# constraint edge indices (= boundary)
+edges <- cbind(1L:10L, c(2L:10L, 1L))
+# constrained Delaunay triangulation
+del <- delaunay(vertices, edges)
+# plot
+opar <- par(mar = c(0, 0, 0, 0))
+plotDelaunay(
+  del, type = "n", asp = 1, fillcolor = "distinct", lwd_borders = 3,
+  xlab = NA, ylab = NA, axes = FALSE
+)
+par(opar)
+# interactive plot with 'rgl'
+mesh <- del[["mesh"]]
+library(rgl)
+open3d(windowRect = c(100, 100, 612, 612))
+shade3d(mesh, color = "red", specular = "orangered")
+wire3d(mesh, color = "black", lwd = 3, specular = "black")
+# plot only the border edges - we could find them in `del[["edges"]]` but 
+  # we will use the 'rgl' function `getBoundary3d`
+open3d(windowRect = c(100, 100, 612, 612))
+shade3d(mesh, color = "darkred", specular = "firebrick")
+shade3d(getBoundary3d(mesh), lwd = 3)
+}
+\seealso{
+The \code{mesh} field in the output of \code{\link{delaunay}} 
+  for an interactive plot. Other examples of \code{plotDelaunay} are given 
+  in the examples of \code{\link{delaunay}}.
 }

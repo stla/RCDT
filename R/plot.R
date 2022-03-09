@@ -29,7 +29,8 @@
 #' @return No value, just renders a 2D plot.
 #'
 #' @seealso The \code{mesh} field in the output of \code{\link{delaunay}} 
-#'   for an interactive plot.
+#'   for an interactive plot. Other examples of \code{plotDelaunay} are given 
+#'   in the examples of \code{\link{delaunay}}.
 #'
 #' @export
 #' @importFrom randomcoloR randomColor distinctColorPalette
