@@ -6,18 +6,21 @@
 #' @param edges the edges for the constrained Delaunay triangulation, 
 #'   an integer matrix with two columns; \code{NULL} for no constraint
 #'
-#' @return A list. It has two fields for an unconstrained Delaunay trianguation: 
-#'  \strong{triangles}, an integer matrix with three columns, it provides 
-#'  the indices of the vertices of the Delaunay triangles, and a field 
-#'  \strong{allEdges}, which is an integer matrix with two columns, providing 
-#'  the indices of all the edges of the triangulation. For a constrained 
-#'  Delaunay tessellation, there is an additional field \strong{borderEdges}, 
-#'  an integer matrix with two columns, providing the indices of the edges 
-#'  given as constraints.
+#' @return A list. It has two fields for an unconstrained Delaunay 
+#'  triangulation: \strong{triangles}, an integer matrix with three columns, 
+#'  it provides the indices of the vertices of the Delaunay triangles, and a 
+#'  field \strong{allEdges}, which is an integer matrix with two columns, 
+#'  providing the indices of all the edges of the triangulation. For a 
+#'  constrained Delaunay triangulation, there is an additional field 
+#'  \strong{borderEdges}, an integer matrix with two columns, providing the 
+#'  indices of the edges given as constraints.
 #'  
 #' @note The triangulation can depend on the order of the points; this is 
 #'   shown in the examples.
 #'
+#' @importFrom rgl tmesh3d
+#' @importFrom Rvcg vcgGetEdge
+#' 
 #' @export
 #'
 #' @examples library(RCDT)
@@ -109,8 +112,21 @@ delaunay <- function(points, edges = NULL){
   if(anyDuplicated(points)){
     stop("There are some duplicated points.", call. = TRUE)
   }
+  storage.mode(points) <- "double"
   if(is.null(edges)){
-    out <- Rcpp_delaunay(points)
+    cpp <- Rcpp_delaunay(points)
+    mesh <- tmesh3d(
+      vertices = t(points),
+      indices = t(cpp[["triangles"]])
+    )
+    Edges <- `colnames<-`(
+      as.matrix(vcgGetEdge(mesh))[, c(1L, 2L, 4L)], c("v1", "v2", "border")
+    )
+    out <- list(
+      "mesh"  = mesh,
+      "edges" = Edges,
+      "area"  = 9999
+    )
   }else{
     if(!is.matrix(edges) || !is.numeric(edges) || ncol(edges) != 2L){
       stop(
@@ -126,12 +142,25 @@ delaunay <- function(points, edges = NULL){
     stopifnot(all(edges <= nrow(points)))
     edges <- t(apply(edges, 1L, sort))
     if(anyDuplicated(edges)){
-      stop("There are some duplicated edges.", call. = TRUE)
+      stop("There are some duplicated constraint edges.", call. = TRUE)
     }
     if(any(edges[, 1L] == edges[, 2L])){
-      stop("There are some invalid edges.", call. = TRUE)
+      stop("There are some invalid constraint edges.", call. = TRUE)
     }
-    out <- Rcpp_constrained_delaunay(points, edges)
+    cpp <- Rcpp_constrained_delaunay(points, edges)
+    mesh <- tmesh3d(
+      vertices = t(points),
+      indices = t(cpp[["triangles"]])
+    )
+    Edges <- `colnames<-`(
+      as.matrix(vcgGetEdge(mesh))[, c(1L, 2L, 4L)], c("v1", "v2", "border")
+    )
+    out <- list(
+      "mesh"        = mesh,
+      "edges"       = Edges,
+      "constraints" = cpp[["borderEdges"]],
+      "area"        = 9999
+    )
     attr(out, "constrained") <- TRUE
   }
   attr(out, "vertices") <- points

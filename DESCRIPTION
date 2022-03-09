@@ -1,7 +1,7 @@
 Package: RCDT
 Type: Package
 Title: Fast 2D Constrained Delaunay Triangulation
-Version: 1.0.0.9000
+Version: 1.0.0.9001
 Authors@R: c(
   person("Stéphane", "Laurent", role=c("aut","cre"), email="laurent_step@outlook.fr"),
   person("Artem", "Amirkhanov", role="cph", comment="CDT library"))
@@ -9,7 +9,7 @@ Maintainer: Stéphane Laurent <laurent_step@outlook.fr>
 Description: Performs 2D Delaunay triangulation, constrained or unconstrained, with the help of the C++ library 'CDT'. A function to plot the triangulation is provided. The constrained Delaunay triangulation has applications in geographic information systems.
 Encoding: UTF-8
 License: GPL-3
-Imports: Rcpp (>= 1.0.8), randomcoloR, graphics, gplots
+Imports: Rcpp (>= 1.0.8), randomcoloR, graphics, gplots, rgl, Rvcg
 Suggests: 
     rmarkdown,
     knitr,

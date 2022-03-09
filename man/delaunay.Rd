@@ -13,14 +13,14 @@ delaunay(points, edges = NULL)
 an integer matrix with two columns; \code{NULL} for no constraint}
 }
 \value{
-A list. It has two fields for an unconstrained Delaunay trianguation: 
- \strong{triangles}, an integer matrix with three columns, it provides 
- the indices of the vertices of the Delaunay triangles, and a field 
- \strong{allEdges}, which is an integer matrix with two columns, providing 
- the indices of all the edges of the triangulation. For a constrained 
- Delaunay tessellation, there is an additional field \strong{borderEdges}, 
- an integer matrix with two columns, providing the indices of the edges 
- given as constraints.
+A list. It has two fields for an unconstrained Delaunay 
+ triangulation: \strong{triangles}, an integer matrix with three columns, 
+ it provides the indices of the vertices of the Delaunay triangles, and a 
+ field \strong{allEdges}, which is an integer matrix with two columns, 
+ providing the indices of all the edges of the triangulation. For a 
+ constrained Delaunay triangulation, there is an additional field 
+ \strong{borderEdges}, an integer matrix with two columns, providing the 
+ indices of the edges given as constraints.
 }
 \description{
 Performs a (constrained) Delaunay triangulation of a set of 
