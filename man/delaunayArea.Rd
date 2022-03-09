@@ -14,7 +14,7 @@ A number, the area of the region triangulated by the Delaunay
   triangulation.
 }
 \description{
-Computes the area of a Delaunay triangulation.
+Computes the area of a region subject to Delaunay triangulation.
 }
 \examples{
 library(RCDT)
