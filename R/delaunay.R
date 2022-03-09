@@ -139,16 +139,18 @@ delaunay <- function(points, edges = NULL){
   out
 }
 
-#' @title Area of Delaunay trianguation
+#' @title Area of Delaunay triangulation
 #' @description Computes the area of a Delaunay triangulation.
 #'
 #' @param del an output of \code{\link{delaunay}}
 #'
-#' @return A number, the area of the Delaunay triangulation.
+#' @return A number, the area of the region triangulated by the Delaunay 
+#'   triangulation.
 #' @export
 #'
 #' @examples library(RCDT)
-#' set.seed(666)
+#' # random points in a square ####
+#' set.seed(666L)
 #' library(uniformly)
 #' square <- rbind(
 #'   c(-1, 1), c(1, 1), c(1, -1), c(-1, -1)
@@ -157,14 +159,16 @@ delaunay <- function(points, edges = NULL){
 #' del <- delaunay(pts)
 #' delaunayArea(del)
 #' 
-#' # a constrained Delaunay triangulation ####
+#' # a constrained Delaunay triangulation: outer and inner squares ####
 #' innerSquare <- rbind( # the hole
 #'   c(-1, 1), c(1, 1), c(1, -1), c(-1, -1)
 #' ) # area: 4
 #' outerSquare <- 2*innerSquare # area: 16
-#' edges <- rbind(c(1, 2), c(2, 3), c(3, 4), c(4, 1))
-#' edges <- rbind(edges, edges + 4)
-#' del <- delaunay(points = rbind(innerSquare, outerSquare), edges = edges)
+#' points <- rbind(innerSquare, outerSquare)
+#' edges_inner <- rbind(c(1L, 2L), c(2L, 3L), c(3L, 4L), c(4L, 1L))
+#' edges_outer <- edges_inner + 4L
+#' edges <- rbind(edges_inner, edges_outer)
+#' del <- delaunay(points, edges = edges)
 #' delaunayArea(del) # 16-4
 delaunayArea <- function(del){
   stopifnot(inherits(del, "delaunay"))

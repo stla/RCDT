@@ -2,7 +2,7 @@
 % Please edit documentation in R/delaunay.R
 \name{delaunayArea}
 \alias{delaunayArea}
-\title{Area of Delaunay trianguation}
+\title{Area of Delaunay triangulation}
 \usage{
 delaunayArea(del)
 }
@@ -10,14 +10,16 @@ delaunayArea(del)
 \item{del}{an output of \code{\link{delaunay}}}
 }
 \value{
-A number, the area of the Delaunay triangulation.
+A number, the area of the region triangulated by the Delaunay 
+  triangulation.
 }
 \description{
 Computes the area of a Delaunay triangulation.
 }
 \examples{
 library(RCDT)
-set.seed(666)
+# random points in a square ####
+set.seed(666L)
 library(uniformly)
 square <- rbind(
   c(-1, 1), c(1, 1), c(1, -1), c(-1, -1)
@@ -26,13 +28,15 @@ pts <- rbind(square, runif_in_cube(8L, d = 2L))
 del <- delaunay(pts)
 delaunayArea(del)
 
-# a constrained Delaunay triangulation ####
+# a constrained Delaunay triangulation: outer and inner squares ####
 innerSquare <- rbind( # the hole
   c(-1, 1), c(1, 1), c(1, -1), c(-1, -1)
 ) # area: 4
 outerSquare <- 2*innerSquare # area: 16
-edges <- rbind(c(1, 2), c(2, 3), c(3, 4), c(4, 1))
-edges <- rbind(edges, edges + 4)
-del <- delaunay(points = rbind(innerSquare, outerSquare), edges = edges)
+points <- rbind(innerSquare, outerSquare)
+edges_inner <- rbind(c(1L, 2L), c(2L, 3L), c(3L, 4L), c(4L, 1L))
+edges_outer <- edges_inner + 4L
+edges <- rbind(edges_inner, edges_outer)
+del <- delaunay(points, edges = edges)
 delaunayArea(del) # 16-4
 }
