@@ -46,3 +46,4 @@ vignettes/*.pdf
 # other
 /inst/trash/
 inst/doc
+inst/images/SVG/
