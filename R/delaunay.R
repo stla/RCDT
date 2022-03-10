@@ -258,7 +258,8 @@ delaunay <- function(points, edges = NULL, elevation = FALSE){
 #' @title Area of Delaunay triangulation
 #' @description Computes the area of a region subject to Delaunay triangulation.
 #'
-#' @param del an output of \code{\link{delaunay}}
+#' @param del an output of \code{\link{delaunay}} executd with 
+#'   \code{elevation=FALSE}
 #'
 #' @return A number, the area of the region triangulated by the Delaunay 
 #'   triangulation.
@@ -288,6 +289,12 @@ delaunay <- function(points, edges = NULL, elevation = FALSE){
 #' delaunayArea(del) # 16-4
 delaunayArea <- function(del){
   stopifnot(inherits(del, "delaunay"))
+  if(isTRUE(attr(del, "elevation"))){
+    stop(
+      "This function is not conceived for elevated Delaunay triangulations.",
+      call. = TRUE
+    )
+  }
   triangles <- del[["mesh"]][["it"]]
   vertices <- attr(del, "vertices")
   ntriangles <- ncol(triangles)
