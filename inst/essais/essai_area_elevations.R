@@ -25,5 +25,5 @@ border <- del$edges[del$edges[,"border"]==1, c(1,2)]
 for(k in 1:nrow(border)){
   A <- vertices[border[k,1],]
   B <- vertices[border[k,2],]
-  segments3d(rbind(A,B), color = "navy")
+  segments3d(rbind(A,B), color = "navy", lwd=4)
 }

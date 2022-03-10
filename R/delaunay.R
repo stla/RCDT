@@ -2,18 +2,48 @@
 #' @description Performs a (constrained) Delaunay triangulation of a set of 
 #'   2d points.
 #'
-#' @param points a numeric matrix with two columns
+#' @param points a numeric matrix with two or three columns (three colums for 
+#'   an elevated Delaunay triangulation)
 #' @param edges the edges for the constrained Delaunay triangulation, 
 #'   an integer matrix with two columns; \code{NULL} for no constraint
+#' @param elevation Boolean, whether to perform an elevate Delaunay 
+#'   triangulation (also known as 2.5D Delaunay triangulation)
 #'
-#' @return A list. XXXXXXXXXXXXXXXXXXXX It has two fields for an unconstrained Delaunay 
-#'  triangulation: \strong{triangles}, an integer matrix with three columns, 
-#'  it provides the indices of the vertices of the Delaunay triangles, and a 
-#'  field \strong{allEdges}, which is an integer matrix with two columns, 
-#'  providing the indices of all the edges of the triangulation. For a 
-#'  constrained Delaunay triangulation, there is an additional field 
-#'  \strong{borderEdges}, an integer matrix with two columns, providing the 
-#'  indices of the edges given as constraints.
+#' @return A list. There are three possibilities.
+#' #' \itemize{
+#'   \item \strong{If the dimension is 2} and \code{edges=NULL},
+#'         the returned value is a list with two fields:
+#'         \code{mesh} and \code{edges}. 
+#'         The \code{mesh} field is an object of
+#'         class \code{\link[rgl]{mesh3d}}, ready for plotting with the 
+#'         \strong{rgl} package. 
+#'         The \code{edges} field provides the indices of the vertices of the 
+#'         edges, given by the first two columns of a three-columns integer 
+#'         matrix. 
+#'         The third column, named \code{border}, only contains some
+#'         zeros and some ones; a border (exterior) edge is labelled by a
+#'         \code{1}. 
+#'   \item \strong{If the dimension is 2} and \code{edges} is not
+#'         \code{NULL}, the returned value is a list with
+#'         three fields: \code{mesh}, \code{edges}, and \code{constraints}. 
+#'         The \code{mesh} and \code{edges} fields are similar to the previous 
+#'         case, the unconstrained Delaunay triangulation. 
+#'         The \code{constraints} field is an integer matrix with
+#'         two columns, it represents the constraint edges. Note that in 
+#'         general these are the same edges as the ones provided by the user,
+#'         but not always, in some rare corner cases.
+#'   \item \strong{If} \code{elevation=TRUE}, the returned value is a list with
+#'         five fields: \code{mesh}, \code{edges}, 
+#'         and \code{surface}. The \code{mesh} field is an object of
+#'         class \code{\link[rgl]{mesh3d}}, ready for plotting with the 
+#'         \strong{rgl} package. The \code{edges} field is similar to the 
+#'         previous cases. 
+#'         The \code{volume} field provides a number, the sum of the volumes 
+#'         under the Delaunay triangles, that is to say the total volume
+#'         under the triangulated surface. Finally, the \code{surface} field
+#'         provides the sum of the areas of all triangles, thereby
+#'         approximating the area of the triangulated surface.
+#' }
 #'  
 #' @note The triangulation can depend on the order of the points; this is 
 #'   shown in the examples.
