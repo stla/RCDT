@@ -2,6 +2,11 @@
 
 * New example to show that the triangulation depends on the order of the points.
 
+* Now the output of `delaunay` contains a 'rgl' mesh object.
+
+* Now the `plotDelaunay` function differentiates the border edges and the 
+constraint edges.
+
 
 # RCDT 1.0.0 (2022-03-06)
 
