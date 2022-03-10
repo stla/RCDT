@@ -38,8 +38,11 @@ of the constraint edges which are not border edges;
 
 \item{fillcolor}{controls the filling colors of the triangles, either
 \code{NULL} for no color, a single color, \code{"random"} to get multiple
-colors with \code{\link[randomcoloR]{randomColor}}, or \code{"distinct"}
-get multiple colors with \code{\link[randomcoloR]{distinctColorPalette}}}
+colors with \code{\link[randomcoloR]{randomColor}}, \code{"distinct"}
+get multiple colors with \code{\link[randomcoloR]{distinctColorPalette}}, 
+or a vector of colors, one color for each triangle; in this case the 
+the colors will be assigned in the order they are provided but after the 
+triangles have been circularly ordered (see the last example)}
 
 \item{hue, luminosity}{if \code{color = "random"}, these arguments are passed
 to \code{\link[randomcoloR]{randomColor}}}
@@ -64,7 +67,7 @@ Plot a constrained or unconstrained 2D Delaunay triangulation.
 }
 \examples{
 library(RCDT)
-# random points in a square
+# random points in a square ####
 square <- rbind(
   c(-1, 1), c(1, 1), c(1, -1), c(-1, -1)
 )
@@ -118,11 +121,42 @@ library(rgl)
 open3d(windowRect = c(100, 100, 612, 612))
 shade3d(mesh, color = "red", specular = "orangered")
 wire3d(mesh, color = "black", lwd = 3, specular = "black")
-# plot only the border edges - we could find them in `del[["edges"]]` but 
-  # we will use the 'rgl' function `getBoundary3d`
+# plot only the border edges - we could find them in `del[["edges"]]` 
+  # but we use the 'rgl' function `getBoundary3d` instead
 open3d(windowRect = c(100, 100, 612, 612))
 shade3d(mesh, color = "darkred", specular = "firebrick")
 shade3d(getBoundary3d(mesh), lwd = 3)
+
+# an example where `fillcolor` is a vector of colors ####
+n <- 50L # number of sides of the outer polygon
+angles1 <- head(seq(0, 2*pi, length.out = n + 1L), -1L)
+outer_points <- cbind(cos(angles1), sin(angles1))
+m <- 5L # number of sides of the inner polygon
+angles2 <- head(seq(0, 2*pi, length.out = m + 1L), -1L)
+phi <- (1+sqrt(5))/2 # the ratio  2-phi  will yield a perfect pentagram
+inner_points <- (2-phi) * cbind(cos(angles2), sin(angles2))
+points <- rbind(outer_points, inner_points)
+# constraint edges
+indices <- 1L:n
+edges_outer <- cbind(indices, c(indices[-1L], indices[1L]))
+indices <- n + 1L:m
+edges_inner <- cbind(indices, c(indices[-1L], indices[1L]))
+edges <- rbind(edges_outer, edges_inner)
+# constrained Delaunay triangulation
+del <- delaunay(points, edges) 
+# there are 55 triangles:
+del[["mesh"]]
+# we make a cyclic palette of colors:
+colors <- viridisLite::turbo(28)
+colors <- c(colors, rev(colors[-1L]))
+# plot
+opar <- par(mar = c(0, 0, 0, 0))
+plotDelaunay(
+  del, type = "n", asp = 1, lwd_borders = 3, col_borders = "black", 
+  fillcolor = colors, col_edges = "black", lwd_edges = 1.5, 
+  axes = FALSE, xlab = NA, ylab = NA
+)
+par(opar)
 }
 \seealso{
 The \code{mesh} field in the output of \code{\link{delaunay}} 

@@ -132,7 +132,7 @@
 #' plotDelaunay(
 #'   del, type="n", col_edges = NULL, fillcolor = "salmon", 
 #'   col_borders = "black", col_constraints = "purple", 
-#'   lwd_borers = 3, lwd_constraints = 3,
+#'   lwd_borders = 3, lwd_constraints = 3,
 #'   asp = 1, axes = FALSE, xlab = NA, ylab = NA
 #' )
 #' par(opar)

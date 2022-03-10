@@ -24,6 +24,16 @@ makeTriangle <- function(vertices, indices){
   vertices[indices, ]
 }
 
+incenter <- function(triangle){
+  A <- triangle[1L, ]
+  B <- triangle[3L, ]
+  C <- triangle[3L, ]
+  a <- distance(B, C)
+  b <- distance(A, C)
+  c <- distance(A, B)
+  (a*A + b*B + c*C) / (a + b + c)
+}
+
 subtractEdges <- function(Edges, edges){
   if(is.null(edges)){
     return(Edges)
