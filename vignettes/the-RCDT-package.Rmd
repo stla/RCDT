@@ -51,14 +51,16 @@ vertices <- rbind(
   c(X[5L], Y[5L]),
   c(x[5L], y[5L])
 )
-# edge indices
+# constraint edges: indices
 edges <- cbind(1L:10L, c(2L:10L, 1L))
 # constrained Delaunay triangulation
 del <- delaunay(vertices, edges)
 # plot
 opar <- par(mar = c(0, 0, 0, 0))
-plotDelaunay(del, asp = 1, color = "distinct", lwd_borders = 3,
-             xlab = NA, ylab = NA, axes = FALSE)
+plotDelaunay(
+  del, type = "n", asp = 1, fillcolor = "distinct", lwd_borders = 3,
+  xlab = NA, ylab = NA, axes = FALSE
+)
 par(opar)
 ```
 
@@ -82,18 +84,18 @@ inner_points <- outer_points / 2
 points <- rbind(outer_points, inner_points)
 # constraint edges
 indices <- 1L:nsides
-edges <- cbind(
-  indices,
-  c(indices[-1L], indices[1L])
-) 
-edges <- rbind(edges, edges + nsides)
+edges_outer <- cbind(
+  indices, c(indices[-1L], indices[1L])
+)
+edges_inner <- edges_outer + nsides
+edges <- rbind(edges_outer, edges_inner)
 # constrained Delaunay triangulation
 del <- delaunay(points, edges) 
 # plot
 opar <- par(mar = c(0, 0, 0, 0))
 plotDelaunay(
-  del, color = "yellow", lwd_borders = 3, col_borders = "navy", 
-  asp = 1, axes = FALSE, xlab = NA, ylab = NA
+  del, type = "n", asp = 1, axes = FALSE, xlab = NA, ylab = NA, 
+  fillcolor = "yellow", lwd_borders = 3, col_borders = "navy"
 )
 par(opar)
 ```
