@@ -6,7 +6,7 @@
 #' @param edges the edges for the constrained Delaunay triangulation, 
 #'   an integer matrix with two columns; \code{NULL} for no constraint
 #'
-#' @return A list. It has two fields for an unconstrained Delaunay 
+#' @return A list. XXXXXXXXXXXXXXXXXXXX It has two fields for an unconstrained Delaunay 
 #'  triangulation: \strong{triangles}, an integer matrix with three columns, 
 #'  it provides the indices of the vertices of the Delaunay triangles, and a 
 #'  field \strong{allEdges}, which is an integer matrix with two columns, 
@@ -131,8 +131,7 @@ delaunay <- function(points, edges = NULL){
     )
     out <- list(
       "mesh"  = mesh,
-      "edges" = Edges,
-      "area"  = 9999
+      "edges" = Edges
     )
   }else{
     if(!is.matrix(edges) || !is.numeric(edges) || ncol(edges) != 2L){
@@ -165,8 +164,7 @@ delaunay <- function(points, edges = NULL){
     out <- list(
       "mesh"        = mesh,
       "edges"       = Edges,
-      "constraints" = cpp[["borderEdges"]],
-      "area"        = 9999
+      "constraints" = cpp[["borderEdges"]]
     )
     attr(out, "constrained") <- TRUE
   }
