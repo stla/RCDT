@@ -208,12 +208,12 @@ delaunay <- function(points, edges = NULL){
 #' delaunayArea(del) # 16-4
 delaunayArea <- function(del){
   stopifnot(inherits(del, "delaunay"))
-  triangles <- del[["triangles"]]
+  triangles <- del[["mesh"]][["it"]]
   vertices <- attr(del, "vertices")
-  ntriangles <- nrow(triangles)
+  ntriangles <- ncol(triangles)
   areas <- numeric(ntriangles)
   for(i in 1L:ntriangles){
-    points <- vertices[triangles[i, ], ]
+    points <- vertices[triangles[, i], ]
     areas[i] <- triangleArea(points[1L, ], points[2L, ], points[3L, ])
   }
   sum(areas)
