@@ -41,7 +41,7 @@ A list. There are three possibilities.
         general these are the same edges as the ones provided by the user,
         but not always, in some rare corner cases.
   \item \strong{If} \code{elevation=TRUE}, the returned value is a list with
-        five fields: \code{mesh}, \code{edges}, 
+        four fields: \code{mesh}, \code{edges}, \code{volume}, 
         and \code{surface}. The \code{mesh} field is an object of
         class \code{\link[rgl]{mesh3d}}, ready for plotting with the 
         \strong{rgl} package. The \code{edges} field is similar to the 
