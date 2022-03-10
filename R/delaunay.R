@@ -106,15 +106,67 @@
 #'   asp = 1, axes = FALSE, xlab = NA, ylab = NA
 #' )
 #' par(opar)
-delaunay <- function(points, edges = NULL){
-  if(!is.matrix(points) || !is.numeric(points) || ncol(points) != 2L){
+delaunay <- function(points, edges = NULL, elevation = FALSE){
+  stopifnot(isBoolean(elevation))
+  if(!is.matrix(points) || !is.numeric(points)){
     stop(
-      "The `points` argument must be a numeric matrix with two columns.", 
+      "The `points` argument must be a numeric matrix with two or three columns.", 
+      call. = TRUE
+    )
+  }
+  dimension <- ncol(points)
+  if(!is.element(dimension, c(2L, 3L))){
+    stop(
+      "The `points` argument must be a numeric matrix with two or three columns.", 
       call. = TRUE
     )
   }
   if(any(is.na(points))){
     stop("Missing values are not allowed.", call. = TRUE)
+  }
+  if(elevation){
+    if(dimension != 3L){
+      stop(
+        "To get an elevated Delaunay tessellation (`elevation=TRUE`), ",
+        "you have to provide three-dimensional points.",
+        call. = TRUE
+      )
+    }
+    x <- points[, 1L]
+    y <- points[, 2L]
+    x <- (x - min(x)) / diff(range(x))
+    y <- (y - min(y)) / diff(range(y))
+    o <- order(round(x+y, 6L), y-x)
+    xy <- cbind(x, y)[o, ]
+    if(anyDuplicated(xy)){
+      stop("There are some duplicated points.", call. = TRUE)
+    }
+    cpp <- Rcpp_delaunay(xy)
+    Triangles <- cpp[["triangles"]]
+    vertices <- points[o, ]
+    mesh <- tmesh3d(
+      vertices = t(vertices),
+      indices = t(Triangles),
+      homogeneous = FALSE
+    )
+    volumes_and_areas <- apply(Triangles, 1L, function(trgl){
+      trgl <- vertices[trgl, ]
+      c(
+        volume_under_triangle(trgl[, 1L], trgl[, 2L], trgl[, 3L]),
+        triangleArea(trgl[1L, ], trgl[2L, ], trgl[3L, ])
+      )
+    })
+    out <- list(
+      "mesh"    = mesh,
+      "edges"   = `colnames<-`(
+        as.matrix(vcgGetEdge(mesh))[, -3L], c("v1", "v2", "border")
+      ),
+      "volume"  = sum(volumes_and_areas[1L, ]),
+      "surface" = sum(volumes_and_areas[2L, ])
+    )
+    attr(out, "elevation") <- TRUE
+    class(out) <- "delaunay"
+    return(out)
   }
   if(anyDuplicated(points)){
     stop("There are some duplicated points.", call. = TRUE)
