@@ -15,7 +15,25 @@ points <- t(cap$vb[-4,])
 del <- delaunay(points, elevation = TRUE)
 del$surface
 
+nsims <- 3000
+sims <- matrix(NA_real_, nrow=nsims, ncol = 3)
+h <- R*(1-sin(pi/2/2))
+for(i in 1:nsims){
+  xy <- runif_in_sphere(1, 2, 1)
+  k <- h * c(tcrossprod(xy))
+  s <- sqrt(h * (2 - k))
+  sims[i, ] <- c(s*xy[1,1], s*xy[1,2], 1-k)
+}
 
+sims[,3]<-sims[,3]-1+h
+points <- sims
+
+h
+k = h*uniform_disc(&v);   // h(x^2+y^2)
+s = sqrtf(h*(2.f-k));     // sqrt( h(2-h(x^2+y^2)) )
+p->x = s*v.x;
+p->y = s*v.y;
+p->z = 1.f-k;
 # volume
 pi*h^2/3 * (3*R-h)
 del$volume

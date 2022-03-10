@@ -258,7 +258,7 @@ delaunay <- function(points, edges = NULL, elevation = FALSE){
 #' @title Area of Delaunay triangulation
 #' @description Computes the area of a region subject to Delaunay triangulation.
 #'
-#' @param del an output of \code{\link{delaunay}} executd with 
+#' @param del an output of \code{\link{delaunay}} executed with 
 #'   \code{elevation=FALSE}
 #'
 #' @return A number, the area of the region triangulated by the Delaunay 

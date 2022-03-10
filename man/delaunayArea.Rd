@@ -7,7 +7,7 @@
 delaunayArea(del)
 }
 \arguments{
-\item{del}{an output of \code{\link{delaunay}} executd with 
+\item{del}{an output of \code{\link{delaunay}} executed with 
 \code{elevation=FALSE}}
 }
 \value{
