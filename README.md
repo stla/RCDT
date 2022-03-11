@@ -148,6 +148,38 @@ par(opar)
 
 ![](https://raw.githubusercontent.com/stla/RCDT/main/inst/images/polygonWithHole.png)
 
+One can also enter a vector of colors in the `fillcolor` argument.
+First, see the number of triangles:
+
+``` r
+del[["mesh"]]
+##  mesh3d object with 110 vertices, 110 triangles.
+```
+
+There are 110 triangles. Let’s make a cyclic vector of 110 colors:
+
+``` r
+colors <- viridisLite::viridis(55)
+colors <- c(colors, rev(colors))
+```
+
+And let’s plot now:
+
+``` r
+opar <- par(mar = c(0, 0, 0, 0))
+plotDelaunay(
+  del, type = "n", asp = 1, lwd_borders = 3, col_borders = "black", 
+  fillcolor = colors, col_edges = "black", lwd_edges = 1.5,
+  axes = FALSE, xlab = NA, ylab = NA
+)
+par(opar)
+```
+
+![](https://raw.githubusercontent.com/stla/RCDT/main/inst/images/polygonWithHoleViridis.png)
+
+The colors are assigned to the triangles in the order they are given,
+but only after the triangle have been circularly ordered.
+
 ## License
 
 The ‘RCDT’ package as a whole is distributed under GPL-3 (GNU GENERAL
