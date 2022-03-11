@@ -206,6 +206,7 @@ plotDelaunay(
   fillcolor = "random", luminosity = "dark", col_edges = "white", 
   axes = FALSE, xlab = NA, ylab = NA, asp = 1
 )
+polygon(xy[inner, ], col = "#ffff99")
 par(opar)
 ```
 
