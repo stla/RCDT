@@ -38,7 +38,7 @@ edges <- cbind(1L:10L, c(2L:10L, 1L))
 ```
 
 ``` r
-# constraned Delaunay triangulation
+# constrained Delaunay triangulation
 library(RCDT)
 del <- delaunay(vertices, edges)
 ```
@@ -179,6 +179,33 @@ par(opar)
 
 The colors are assigned to the triangles in the order they are given,
 but only after the triangles have been circularly ordered.
+
+## A funny curve
+
+I found this curve
+[here](https://health.ahs.upei.ca/KubiosHRV/MCR/toolbox/matlab/demos/html/demoDelaunayTri.html#19).
+
+``` r
+t_ <- seq(-pi, pi, length.out = 193L)[-1L]
+r_ <- 0.1 + 5*sqrt(cos(6*t_)^2 + 0.7^2)
+xy <- cbind(r_*cos(t_), r_*sin(t_))
+edges1 <- cbind(1L:192L, c(2L:192L, 1L))
+inner <- which(r_ == min(r_))
+edges2 <- cbind(inner, c(tail(inner, -1L), inner[1L]))
+del <- delaunay(xy, edges = rbind(edges1, edges2))
+```
+
+``` r
+opar <- par(mar = c(0, 0, 0, 0))
+plotDelaunay(
+  del, type = "n", col_borders = "black", lwd_borders = 2, 
+  fillcolor = "random", luminosity = "dark", col_edges = "white", 
+  axes = FALSE, xlab = NA, ylab = NA, asp = 1
+)
+par(opar)
+```
+
+![](https://raw.githubusercontent.com/stla/RCDT/main/inst/images/sunCurve.png)
 
 ## License
 

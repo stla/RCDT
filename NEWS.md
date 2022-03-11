@@ -9,6 +9,8 @@ constraint edges.
 
 * New feature: elevated Delaunay triangulation (or 2.5D Delaunay triangulation).
 
+* More examples in the README file.
+
 
 # RCDT 1.0.0 (2022-03-06)
 
