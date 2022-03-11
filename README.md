@@ -178,7 +178,7 @@ par(opar)
 ![](https://raw.githubusercontent.com/stla/RCDT/main/inst/images/polygonWithHoleViridis.png)
 
 The colors are assigned to the triangles in the order they are given,
-but only after the triangle have been circularly ordered.
+but only after the triangles have been circularly ordered.
 
 ## License
 
