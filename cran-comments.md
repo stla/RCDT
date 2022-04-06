@@ -15,6 +15,4 @@ in the compiled C++ code. This is why I added `#define NDEBUG` in the
 
 ## R CMD check results
 
-0 errors | 0 warnings | 1 note
-
-* This is a new release.
+OK.

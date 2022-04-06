@@ -1,4 +1,4 @@
-# RCDT 1.0.0.9003 (2022-03-11)
+# RCDT 1.1.0 (2022-04-06)
 
 * New example to show that the triangulation depends on the order of the points.
 
