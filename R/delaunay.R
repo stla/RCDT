@@ -6,7 +6,7 @@
 #'   an elevated Delaunay triangulation)
 #' @param edges the edges for the constrained Delaunay triangulation, 
 #'   an integer matrix with two columns; \code{NULL} for no constraint
-#' @param elevation Boolean, whether to perform an elevate Delaunay 
+#' @param elevation Boolean, whether to perform an elevated Delaunay 
 #'   triangulation (also known as 2.5D Delaunay triangulation)
 #'
 #' @return A list. There are three possibilities.
@@ -171,15 +171,14 @@ delaunay <- function(points, edges = NULL, elevation = FALSE){
     if(anyDuplicated(xy)){
       stop("There are some duplicated points.", call. = TRUE)
     }
-    cpp <- Rcpp_delaunay(xy)
-    Triangles <- cpp[["triangles"]]
+    Triangles <- Rcpp_delaunay(t(xy))
     vertices <- points[o, ]
     mesh <- tmesh3d(
       vertices = t(vertices),
-      indices = t(Triangles),
+      indices = Triangles,
       homogeneous = FALSE
     )
-    volumes_and_areas <- apply(Triangles, 1L, function(trgl){
+    volumes_and_areas <- apply(Triangles, 2L, function(trgl){
       trgl <- vertices[trgl, ]
       c(
         volume_under_triangle(trgl[, 1L], trgl[, 2L], trgl[, 3L]),
@@ -202,11 +201,12 @@ delaunay <- function(points, edges = NULL, elevation = FALSE){
     stop("There are some duplicated points.", call. = TRUE)
   }
   storage.mode(points) <- "double"
+  tpoints <- t(points)
   if(is.null(edges)){
-    cpp <- Rcpp_delaunay(points)
+    triangles <- Rcpp_delaunay(tpoints)
     mesh <- tmesh3d(
-      vertices = rbind(t(points), 0),
-      indices = t(cpp[["triangles"]])
+      vertices = rbind(tpoints, 0),
+      indices = triangles
     )
     Edges <- `colnames<-`(
       as.matrix(vcgGetEdge(mesh))[, c(1L, 2L, 4L)], c("v1", "v2", "border")

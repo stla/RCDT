@@ -1,7 +1,7 @@
 Package: RCDT
 Type: Package
 Title: Fast 2D Constrained Delaunay Triangulation
-Version: 1.1.0
+Version: 1.1.0.9000
 Authors@R: c(
   person("Stéphane", "Laurent", role=c("aut","cre"), email="laurent_step@outlook.fr"),
   person("Artem", "Amirkhanov", role="cph", comment="CDT library"))

@@ -5,6 +5,7 @@ xy <- cbind(runif(n), runif(n))
 
 microbenchmark(
   RCDT = RCDT::delaunay(xy),
+  RCDTeigen = RCDTeigen::delaunay(xy),
   # deldir = deldir::deldir(xy[,1], xy[,2], suppressMsge = TRUE),
   # CGAL = RCGAL::delaunay(xy),
   geometry = geometry::delaunayn(xy, options = "Pp"),

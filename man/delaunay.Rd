@@ -13,7 +13,7 @@ an elevated Delaunay triangulation)}
 \item{edges}{the edges for the constrained Delaunay triangulation, 
 an integer matrix with two columns; \code{NULL} for no constraint}
 
-\item{elevation}{Boolean, whether to perform an elevate Delaunay 
+\item{elevation}{Boolean, whether to perform an elevated Delaunay 
 triangulation (also known as 2.5D Delaunay triangulation)}
 }
 \value{

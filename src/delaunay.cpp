@@ -26,14 +26,14 @@ typedef CDT::Triangulation<double> Triangulation;
 // }
 
 // [[Rcpp::export]]
-Rcpp::List Rcpp_delaunay(const arma::mat & points){
+arma::umat Rcpp_delaunay(const arma::mat & tpoints){
   Triangulation cdt(CDT::VertexInsertionOrder::AsProvided);
   // insert vertices
-  const size_t npoints = points.n_rows;
+  const size_t npoints = tpoints.n_cols;
   std::vector<Vertex> vertices(npoints);
   for (size_t i = 0; i < npoints; ++i) {
-    const arma::rowvec row_i = points.row(i);
-    vertices[i] = Vertex::make(row_i(0), row_i(1));
+    const arma::vec col_i = tpoints.col(i);
+    vertices[i] = Vertex::make(col_i(0), col_i(1));
   }
   cdt.insertVertices(vertices);
   cdt.eraseSuperTriangle();
@@ -41,27 +41,24 @@ Rcpp::List Rcpp_delaunay(const arma::mat & points){
   // triangles
   const CDT::TriangleVec triangles = cdt.triangles;
   const size_t ntriangles = triangles.size();
-  arma::umat out_triangles(ntriangles, 3);
+  arma::umat out_triangles(3, ntriangles);
   for(size_t i = 0; i < ntriangles; ++i){
     const CDT::VerticesArr3 trgl = triangles[i].vertices;
-    out_triangles(i, 0) = trgl[0];
-    out_triangles(i, 1) = trgl[1];
-    out_triangles(i, 2) = trgl[2];
+    out_triangles.col(i) = {trgl[0] + 1, trgl[1] + 1, trgl[2] + 1};
   }
   // all edges
-  CDT::EdgeUSet allEdges = CDT::extractEdgesFromTriangles(triangles);
-  arma::umat out_alledges(allEdges.size(), 2);
-  std::unordered_set<Edge> :: iterator it;
-  size_t i = 0;
-  for(it = allEdges.begin(); it != allEdges.end(); it++){
-    const Edge edge = *it;
-    out_alledges(i, 0) = CDT::edge_get_v1(edge);
-    out_alledges(i, 1) = CDT::edge_get_v2(edge);
-    i++;
-  }
+  // CDT::EdgeUSet allEdges = CDT::extractEdgesFromTriangles(triangles);
+  // arma::umat out_alledges(allEdges.size(), 2);
+  // std::unordered_set<Edge> :: iterator it;
+  // size_t i = 0;
+  // for(it = allEdges.begin(); it != allEdges.end(); it++){
+  //   const Edge edge = *it;
+  //   out_alledges(i, 0) = CDT::edge_get_v1(edge);
+  //   out_alledges(i, 1) = CDT::edge_get_v2(edge);
+  //   i++;
+  // }
   //
-  return Rcpp::List::create(Rcpp::Named("triangles") = out_triangles + 1,
-                            Rcpp::Named("allEdges") = out_alledges + 1);
+  return out_triangles;
 }
 
 // void* operator new (size_t size, const unsigned & v1, const unsigned & v2) {

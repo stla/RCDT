@@ -12,13 +12,13 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // Rcpp_delaunay
-Rcpp::List Rcpp_delaunay(const arma::mat& points);
-RcppExport SEXP _RCDT_Rcpp_delaunay(SEXP pointsSEXP) {
+arma::umat Rcpp_delaunay(const arma::mat& tpoints);
+RcppExport SEXP _RCDT_Rcpp_delaunay(SEXP tpointsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::mat& >::type points(pointsSEXP);
-    rcpp_result_gen = Rcpp::wrap(Rcpp_delaunay(points));
+    Rcpp::traits::input_parameter< const arma::mat& >::type tpoints(tpointsSEXP);
+    rcpp_result_gen = Rcpp::wrap(Rcpp_delaunay(tpoints));
     return rcpp_result_gen;
 END_RCPP
 }

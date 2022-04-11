@@ -1,3 +1,8 @@
+# RCDT 1.1.0.9000 (2022-04-11)
+
+Speed improvement, by removing some useless code. 
+
+
 # RCDT 1.1.0 (2022-04-06)
 
 * New example to show that the triangulation depends on the order of the points.
