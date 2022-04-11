@@ -235,10 +235,10 @@ delaunay <- function(points, edges = NULL, elevation = FALSE){
     if(any(edges[, 1L] == edges[, 2L])){
       stop("There are some invalid constraint edges.", call. = TRUE)
     }
-    cpp <- Rcpp_constrained_delaunay(points, edges)
+    cpp <- Rcpp_constrained_delaunay(tpoints, t(edges))
     mesh <- tmesh3d(
-      vertices = rbind(t(points), 0),
-      indices = t(cpp[["triangles"]])
+      vertices = rbind(tpoints, 0),
+      indices = cpp[["triangles"]]
     )
     Edges <- `colnames<-`(
       as.matrix(vcgGetEdge(mesh))[, c(1L, 2L, 4L)], c("v1", "v2", "border")
@@ -246,7 +246,7 @@ delaunay <- function(points, edges = NULL, elevation = FALSE){
     out <- list(
       "mesh"        = mesh,
       "edges"       = Edges,
-      "constraints" = cpp[["borderEdges"]]
+      "constraints" = t(cpp[["borderEdges"]])
     )
     attr(out, "constrained") <- TRUE
   }

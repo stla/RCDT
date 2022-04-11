@@ -5,7 +5,7 @@ Rcpp_delaunay <- function(tpoints) {
     .Call(`_RCDT_Rcpp_delaunay`, tpoints)
 }
 
-Rcpp_constrained_delaunay <- function(points, edges) {
-    .Call(`_RCDT_Rcpp_constrained_delaunay`, points, edges)
+Rcpp_constrained_delaunay <- function(tpoints, tedges) {
+    .Call(`_RCDT_Rcpp_constrained_delaunay`, tpoints, tedges)
 }
 

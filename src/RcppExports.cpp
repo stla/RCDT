@@ -23,14 +23,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // Rcpp_constrained_delaunay
-Rcpp::List Rcpp_constrained_delaunay(const arma::mat& points, const arma::umat& edges);
-RcppExport SEXP _RCDT_Rcpp_constrained_delaunay(SEXP pointsSEXP, SEXP edgesSEXP) {
+Rcpp::List Rcpp_constrained_delaunay(const arma::mat& tpoints, const arma::umat& tedges);
+RcppExport SEXP _RCDT_Rcpp_constrained_delaunay(SEXP tpointsSEXP, SEXP tedgesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::mat& >::type points(pointsSEXP);
-    Rcpp::traits::input_parameter< const arma::umat& >::type edges(edgesSEXP);
-    rcpp_result_gen = Rcpp::wrap(Rcpp_constrained_delaunay(points, edges));
+    Rcpp::traits::input_parameter< const arma::mat& >::type tpoints(tpointsSEXP);
+    Rcpp::traits::input_parameter< const arma::umat& >::type tedges(tedgesSEXP);
+    rcpp_result_gen = Rcpp::wrap(Rcpp_constrained_delaunay(tpoints, tedges));
     return rcpp_result_gen;
 END_RCPP
 }
