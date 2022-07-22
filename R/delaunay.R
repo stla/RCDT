@@ -243,10 +243,12 @@ delaunay <- function(points, edges = NULL, elevation = FALSE){
     Edges <- `colnames<-`(
       as.matrix(vcgGetEdge(mesh))[, c(1L, 2L, 4L)], c("v1", "v2", "border")
     )
+    borderEdges <- cpp[["borderEdges"]]
+    storage.mode(borderEdges) <- "integer" 
     out <- list(
       "mesh"        = mesh,
       "edges"       = Edges,
-      "constraints" = t(cpp[["borderEdges"]])
+      "constraints" = t(borderEdges)
     )
     attr(out, "constrained") <- TRUE
   }

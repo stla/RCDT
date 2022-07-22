@@ -14,9 +14,11 @@ Suggests:
     rmarkdown,
     knitr,
     uniformly,
-    viridisLite
+    viridisLite,
+    testthat (>= 3.0.0)
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 7.1.2
 URL: https://github.com/stla/RCDT
 BugReports: https://github.com/stla/RCDT/issues
 VignetteBuilder: knitr
+Config/testthat/edition: 3
