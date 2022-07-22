@@ -1,24 +1,40 @@
-Package: RCDT
 Type: Package
+Package: RCDT
 Title: Fast 2D Constrained Delaunay Triangulation
 Version: 1.1.0.9000
 Authors@R: c(
-  person("Stéphane", "Laurent", role=c("aut","cre"), email="laurent_step@outlook.fr"),
-  person("Artem", "Amirkhanov", role="cph", comment="CDT library"))
+    person("Stéphane", "Laurent", , "laurent_step@outlook.fr", role = c("aut", "cre")),
+    person("Artem", "Amirkhanov", role = "cph",
+           comment = "CDT library")
+  )
 Maintainer: Stéphane Laurent <laurent_step@outlook.fr>
-Description: Performs 2D Delaunay triangulation, constrained or unconstrained, with the help of the C++ library 'CDT'. A function to plot the triangulation is provided. The constrained Delaunay triangulation has applications in geographic information systems.
-Encoding: UTF-8
+Description: Performs 2D Delaunay triangulation, constrained or
+    unconstrained, with the help of the C++ library 'CDT'. A function to
+    plot the triangulation is provided. The constrained Delaunay
+    triangulation has applications in geographic information systems.
 License: GPL-3
-Imports: Rcpp (>= 1.0.8), randomcoloR, graphics, gplots, rgl, Rvcg
-Suggests: 
-    rmarkdown,
-    knitr,
-    uniformly,
-    viridisLite,
-    testthat (>= 3.0.0)
-LinkingTo: Rcpp, RcppArmadillo
-RoxygenNote: 7.1.2
 URL: https://github.com/stla/RCDT
 BugReports: https://github.com/stla/RCDT/issues
-VignetteBuilder: knitr
+Imports: 
+    gplots,
+    graphics,
+    randomcoloR,
+    Rcpp (>= 1.0.8),
+    rgl,
+    Rvcg
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0),
+    uniformly,
+    viridisLite
+LinkingTo: 
+    BH,
+    Rcpp,
+    RcppArmadillo
+SystemRequirements: C++ 14
+VignetteBuilder: 
+    knitr
 Config/testthat/edition: 3
+Encoding: UTF-8
+RoxygenNote: 7.1.2
