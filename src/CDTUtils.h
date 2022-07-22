@@ -399,7 +399,7 @@ CDT_EXPORT T distanceSquared(const V2d<T>& a, const V2d<T>& b);
 } // namespace CDT
 
 #ifndef CDT_USE_AS_COMPILED_LIBRARY
-#include "CDTUtils.hpp"
+#include "CDTUtils_hpp.h"
 #endif
 
 //*****************************************************************************

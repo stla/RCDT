@@ -611,7 +611,7 @@ void Triangulation<T, TNearPointLocator>::conformToEdges(
 } // namespace CDT
 
 #ifndef CDT_USE_AS_COMPILED_LIBRARY
-#include "Triangulation.hpp"
+#include "Triangulation_hpp.h"
 #endif
 
 #endif // header-guard

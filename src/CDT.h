@@ -13,7 +13,7 @@
 #include "CDTUtils.h"
 #include "Triangulation.h"
 
-#include "remove_at.hpp"
+#include "remove_at_hpp.h"
 
 #include <algorithm>
 #include <cassert>
@@ -442,7 +442,7 @@ unordered_map<Edge, std::vector<VertInd> > EdgeToSplitVertices(
 } // namespace CDT
 
 #ifndef CDT_USE_AS_COMPILED_LIBRARY
-#include "CDT.hpp"
+#include "CDT_hpp.h"
 #endif
 
 #endif // header-guard
