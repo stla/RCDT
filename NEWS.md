@@ -4,6 +4,8 @@
 
 * Upgraded CDT.
 
+* Handle intersecting constraint edges.
+
 
 # RCDT 1.1.0 (2022-04-06)
 

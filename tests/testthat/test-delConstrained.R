@@ -42,3 +42,25 @@ test_that("2d constrained Delaunay", {
     unname(split(constraints, 1L:24L))
   )
 })
+
+
+test_that("2d constrained Delaunay with an intersection", {
+  points <- rbind(
+    c(0,0), c(1,0), c(1,1), c(0,1)
+  )
+  # constraint edges
+  edges <- rbind(c(1L, 3L), c(2L, 4L))
+  # constrained Delaunay triangulation
+  del <- delaunay(points, edges) 
+  #
+  vertices <- rbind(points, c(0.5, 0.5))
+  constraints <- matrix(
+    c(1L, 5L, 3L, 5L, 2L, 5L, 4L, 5L),
+    nrow = 4L, ncol = 2L, byrow = TRUE
+  )
+  expect_equal(del[["vertices"]], vertices)
+  expect_setequal(
+    unname(split(del[["constraints"]], 1L:4L)), 
+    unname(split(constraints, 1L:4L))
+  )
+})
