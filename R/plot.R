@@ -132,12 +132,12 @@
 #' )
 #' par(opar)
 plotDelaunay <- function(
-  del, 
-  col_edges = "black", col_borders = "red", col_constraints = "green",
-  fillcolor = "distinct", hue = "random", luminosity = "light",
-  lty_edges = par("lty"), lwd_edges = par("lwd"),
-  lty_borders = par("lty"), lwd_borders = par("lwd"),
-  lty_constraints = par("lty"), lwd_constraints = par("lwd"), ...
+    del, 
+    col_edges = "black", col_borders = "red", col_constraints = "green",
+    fillcolor = "distinct", hue = "random", luminosity = "light",
+    lty_edges = par("lty"), lwd_edges = par("lwd"),
+    lty_borders = par("lty"), lwd_borders = par("lwd"),
+    lty_constraints = par("lty"), lwd_constraints = par("lwd"), ...
 ){
   if(!inherits(del, "delaunay")){
     stop(
@@ -151,7 +151,7 @@ plotDelaunay <- function(
       call. = TRUE
     )
   }
-  vertices <- attr(del, "vertices")
+  vertices <- del[["vertices"]]
   if(ncol(vertices) != 2L){
     stop(
       sprintf("Invalid dimension (%d instead of 2).", ncol(vertices)),
@@ -159,48 +159,51 @@ plotDelaunay <- function(
     )
   }
   plot(vertices, ...)
-  if((ncolors <- length(fillcolor)) > 1L){
-    triangles <- t(del[["mesh"]][["it"]])
-    ntriangles <- nrow(triangles)
-    if(ncolors != ntriangles){
-      stop(
-        sprintf("The number of colors in `fillcolor` (%d) ", ncolors),
-        sprintf(
-          "does not coincide with the number of triangles (%d).", ntriangles
-        ),
-        call. = TRUE
-      )
-    }
-    centeredVertices <- sweep(vertices, 2L, colMeans(vertices))
-    allTrianglesCenters <- apply(triangles, 1L, function(trgl){
-      colMeans(makeTriangle(centeredVertices, trgl))
-    }, simplify = TRUE)
-    angles <- apply(allTrianglesCenters, 2L, function(x) atan2(x[2L], x[1L]))
-    o <- order(angles)
-    #colors <- fillcolor[o]
-    otriangles <- triangles[o, ]
-    for(i in 1L:ntriangles){
-      triangle <- makeTriangle(vertices, otriangles[i, ])
-      polygon(triangle, border = NA, col = fillcolor[i])
-    }
-  }else if(!isFalsy(fillcolor)){
-    fillcolor <- tryCatch({
-      col2hex(fillcolor)
-    }, error = function(e){
-      match.arg(fillcolor, c("random", "distinct"))
-    })
-    triangles <- t(del[["mesh"]][["it"]])
-    ntriangles <- nrow(triangles)
-    if(fillcolor == "random"){
-      colors <- randomColor(ntriangles, hue = hue, luminosity = luminosity)
-    }else if(fillcolor == "distinct"){
-      colors <- distinctColorPalette(ntriangles)
-    }else{
-      colors <- rep(fillcolor, ntriangles)
-    }
-    for(i in 1L:ntriangles){
-      triangle <- makeTriangle(vertices, triangles[i, ])
-      polygon(triangle, border = NA, col = colors[i])
+  mesh <- del[["mesh"]]
+  if(!is.null(mesh)){
+    if((ncolors <- length(fillcolor)) > 1L){
+      triangles <- t(mesh[["it"]])
+      ntriangles <- nrow(triangles)
+      if(ncolors != ntriangles){
+        stop(
+          sprintf("The number of colors in `fillcolor` (%d) ", ncolors),
+          sprintf(
+            "does not coincide with the number of triangles (%d).", ntriangles
+          ),
+          call. = TRUE
+        )
+      }
+      centeredVertices <- sweep(vertices, 2L, colMeans(vertices))
+      allTrianglesCenters <- apply(triangles, 1L, function(trgl){
+        colMeans(makeTriangle(centeredVertices, trgl))
+      }, simplify = TRUE)
+      angles <- apply(allTrianglesCenters, 2L, function(x) atan2(x[2L], x[1L]))
+      o <- order(angles)
+      #colors <- fillcolor[o]
+      otriangles <- triangles[o, ]
+      for(i in 1L:ntriangles){
+        triangle <- makeTriangle(vertices, otriangles[i, ])
+        polygon(triangle, border = NA, col = fillcolor[i])
+      }
+    }else if(!isFalsy(fillcolor)){
+      fillcolor <- tryCatch({
+        col2hex(fillcolor)
+      }, error = function(e){
+        match.arg(fillcolor, c("random", "distinct"))
+      })
+      triangles <- t(del[["mesh"]][["it"]])
+      ntriangles <- nrow(triangles)
+      if(fillcolor == "random"){
+        colors <- randomColor(ntriangles, hue = hue, luminosity = luminosity)
+      }else if(fillcolor == "distinct"){
+        colors <- distinctColorPalette(ntriangles)
+      }else{
+        colors <- rep(fillcolor, ntriangles)
+      }
+      for(i in 1L:ntriangles){
+        triangle <- makeTriangle(vertices, triangles[i, ])
+        polygon(triangle, border = NA, col = colors[i])
+      }
     }
   }
   constraintEdges <- del[["constraints"]]
@@ -212,7 +215,7 @@ plotDelaunay <- function(
   otherEdges <- subtractEdges(allEdges, specialEdges)
   if(!isFalsy(col_edges)){
     edges <- otherEdges
-    for(i in 1L:nrow(edges)){
+    for(i in seq_along(nrow(edges))){
       edge <- edges[i, ]
       p0 <- vertices[edge[1L], ]
       p1 <- vertices[edge[2L], ]
@@ -224,7 +227,7 @@ plotDelaunay <- function(
   }
   if(!isFalsy(col_borders)){
     edges <- borderEdges
-    for(i in 1L:nrow(edges)){
+    for(i in seq_along(nrow(edges))){
       edge <- edges[i, ]
       p0 <- vertices[edge[1L], ]
       p1 <- vertices[edge[2L], ]
@@ -236,7 +239,7 @@ plotDelaunay <- function(
   }
   if(!is.null(constraintEdges) && !isFalsy(col_constraints)){
     edges <- constraintEdges
-    for(i in 1L:nrow(edges)){
+    for(i in seq_along(nrow(edges))){
       edge <- edges[i, ]
       p0 <- vertices[edge[1L], ]
       p1 <- vertices[edge[2L], ]

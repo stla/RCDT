@@ -186,12 +186,13 @@ delaunay <- function(points, edges = NULL, elevation = FALSE){
       )
     })
     out <- list(
-      "mesh"    = mesh,
-      "edges"   = `colnames<-`(
+      "vertices" = vertices,
+      "mesh"     = mesh,
+      "edges"    = `colnames<-`(
         as.matrix(vcgGetEdge(mesh))[, -3L], c("v1", "v2", "border")
       ),
-      "volume"  = sum(volumes_and_areas[1L, ]),
-      "surface" = sum(volumes_and_areas[2L, ])
+      "volume"   = sum(volumes_and_areas[1L, ]),
+      "surface"  = sum(volumes_and_areas[2L, ])
     )
     attr(out, "elevation") <- TRUE
     class(out) <- "delaunay"
@@ -212,8 +213,9 @@ delaunay <- function(points, edges = NULL, elevation = FALSE){
       as.matrix(vcgGetEdge(mesh))[, c(1L, 2L, 4L)], c("v1", "v2", "border")
     )
     out <- list(
-      "mesh"  = mesh,
-      "edges" = Edges
+      "vertices" = points,
+      "mesh"     = mesh,
+      "edges"    = Edges
     )
   }else{
     if(!is.matrix(edges) || !is.numeric(edges) || ncol(edges) != 2L){
@@ -241,7 +243,9 @@ delaunay <- function(points, edges = NULL, elevation = FALSE){
     Vertices <- cpp[["vertices"]]
     if(ncol(triangles) == 0L){
       mesh <- NULL
-      Edges <- NULL
+      Edges <- `colnames<-`(
+        matrix(integer(0L), nrow = 0L, ncol = 3L), c("v1", "v2", "border")
+      )
     }else{
       mesh <- tmesh3d(
         vertices = rbind(Vertices, 0),
@@ -261,7 +265,6 @@ delaunay <- function(points, edges = NULL, elevation = FALSE){
     )
     attr(out, "constrained") <- TRUE
   }
-  attr(out, "vertices") <- points
   class(out) <- "delaunay"
   out
 }
@@ -306,8 +309,14 @@ delaunayArea <- function(del){
       call. = TRUE
     )
   }
-  triangles <- del[["mesh"]][["it"]]
-  vertices <- attr(del, "vertices")
+  mesh <- del[["mesh"]]
+  if(is.null(mesh)){
+    stop(
+      "This Delaunay triangulation is empty.", call. = TRUE
+    )
+  }
+  triangles <- mesh[["it"]]
+  vertices <- del[["vertices"]]
   ntriangles <- ncol(triangles)
   areas <- numeric(ntriangles)
   for(i in 1L:ntriangles){

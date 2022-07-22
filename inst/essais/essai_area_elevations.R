@@ -2,7 +2,7 @@ library(RCDT)
 library(Rvcg)
 library(rgl)
 
-cap <- vcgSphericalCap(angleRad = pi-pi/3, subdivision = 3, normals = TRUE)
+cap <- vcgSphericalCap(angleRad = pi-pi/3, subdivision = 4, normals = TRUE)
 shade3d(cap, color = "green")
 wire3d(cap)
 
@@ -14,6 +14,9 @@ vcgArea(cap)
 points <- t(cap$vb[-4,])
 del <- delaunay(points, elevation = TRUE)
 del$surface
+
+(1/3) * pi * h^2 * (3*R - h)
+del$volume
 
 nsims <- 3000
 sims <- matrix(NA_real_, nrow=nsims, ncol = 3)
