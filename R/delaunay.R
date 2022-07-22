@@ -236,13 +236,20 @@ delaunay <- function(points, edges = NULL, elevation = FALSE){
       stop("There are some invalid constraint edges.", call. = TRUE)
     }
     cpp <- Rcpp_constrained_delaunay(tpoints, t(edges))
-    mesh <- tmesh3d(
-      vertices = rbind(tpoints, 0),
-      indices = cpp[["triangles"]]
-    )
-    Edges <- `colnames<-`(
-      as.matrix(vcgGetEdge(mesh))[, c(1L, 2L, 4L)], c("v1", "v2", "border")
-    )
+    triangles <- cpp[["triangles"]]
+    storage.mode(triangles) <- "integer"
+    if(ncol(triangles) == 0L){
+      mesh <- NULL
+      Edges <- NULL
+    }else{
+      mesh <- tmesh3d(
+        vertices = rbind(tpoints, 0),
+        indices = triangles
+      )
+      Edges <- `colnames<-`(
+        as.matrix(vcgGetEdge(mesh))[, c(1L, 2L, 4L)], c("v1", "v2", "border")
+      )
+    }
     borderEdges <- cpp[["borderEdges"]]
     storage.mode(borderEdges) <- "integer" 
     out <- list(
