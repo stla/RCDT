@@ -226,7 +226,7 @@ namespace stdx {
 		return result;
 	}
 }
-#endif // CXX11_IS_SUPPORTED
+#endif // PREDICATES_CXX11_IS_SUPPORTED
 
 namespace detail {
 	template<typename T> class ExpansionBase;
@@ -247,8 +247,6 @@ namespace detail {
 				m_size = e.size();
 				return *this;
 			}
-
-			Expansion(const Expansion& other) { *this = other; }
 
 			//vector like convenience functions
 			size_t size() const {return m_size;}
@@ -601,12 +599,13 @@ namespace detail {
 	template <typename T>
 	const T& Epsilon()
 	{
-		static const T epsilon = 
+		static const T epsilon = static_cast<T>(
 #ifdef PREDICATES_CXX11_IS_SUPPORTED
-			std::exp2(-std::numeric_limits<T>::digits);
+			std::exp2(-std::numeric_limits<T>::digits)
 #else
-			std::ldexp(T(1), -std::numeric_limits<T>::digits);
+			std::ldexp(T(1), -std::numeric_limits<T>::digits)
 #endif
+		);
 		return epsilon;
 	}
 

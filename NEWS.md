@@ -1,6 +1,8 @@
 # RCDT 1.1.0.9000 (2022-04-11)
 
-Speed improvement, by removing some useless code. 
+* Speed improvement, by removing some useless code. 
+
+* Upgraded CDT.
 
 
 # RCDT 1.1.0 (2022-04-06)

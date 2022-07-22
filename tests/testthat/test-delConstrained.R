@@ -37,5 +37,8 @@ test_that("2d constrained Delaunay", {
   )
   #
   expect_equal(del[["edges"]], edges)
-  expect_equal(del[["constraints"]], constraints)
+  expect_setequal(
+    unname(split(del[["constraints"]], 1L:24L)), 
+    unname(split(constraints, 1L:24L))
+  )
 })

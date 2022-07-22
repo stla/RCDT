@@ -61,6 +61,7 @@ typedef char couldnt_parse_cxx_standard[-1]; ///< Error: couldn't parse standard
 namespace CDT
 {
 using std::array;
+using std::get;
 using std::make_tuple;
 using std::mt19937;
 using std::tie;
@@ -79,6 +80,7 @@ using std::unordered_set;
 namespace CDT
 {
 using boost::array;
+using boost::get;
 using boost::make_tuple;
 using boost::tie;
 using boost::tuple;
@@ -99,7 +101,7 @@ struct CDT_EXPORT V2d
     T y; ///< Y-coordinate
 
     /// Create vector from X and Y coordinates
-    static V2d make(const T x, const T y);
+    static V2d make(T x, T y);
 };
 
 /// X- coordinate getter for V2d
@@ -118,7 +120,7 @@ const T& getY_V2d(const V2d<T>& v)
 
 /// If two 2D vectors are exactly equal
 template <typename T>
-CDT_EXPORT bool operator==(const CDT::V2d<T>& lhs, const CDT::V2d<T>& rhs)
+bool operator==(const CDT::V2d<T>& lhs, const CDT::V2d<T>& rhs)
 {
     return lhs.x == rhs.x && lhs.y == rhs.y;
 }
@@ -145,6 +147,11 @@ BOOST_STRONG_TYPEDEF(IndexSizeType, VertInd);
 BOOST_STRONG_TYPEDEF(IndexSizeType, TriInd);
 #endif
 
+/// Constant representing no valid neighbor for a triangle
+const static TriInd noNeighbor(std::numeric_limits<TriInd>::max());
+/// Constant representing no valid vertex for a triangle
+const static VertInd noVertex(std::numeric_limits<VertInd>::max());
+
 typedef std::vector<TriInd> TriIndVec;  ///< Vector of triangle indices
 typedef array<VertInd, 3> VerticesArr3; ///< array of three vertex indices
 typedef array<TriInd, 3> NeighborsArr3; ///< array of three neighbors
@@ -155,6 +162,20 @@ struct CDT_EXPORT Box2d
 {
     V2d<T> min; ///< min box corner
     V2d<T> max; ///< max box corner
+
+    /// Envelop box around a point
+    void envelopPoint(const V2d<T>& p)
+    {
+        envelopPoint(p.x, p.y);
+    }
+    /// Envelop box around a point with given coordinates
+    void envelopPoint(const T x, const T y)
+    {
+        min.x = std::min(x, min.x);
+        max.x = std::max(x, max.x);
+        min.y = std::min(y, min.y);
+        max.y = std::max(y, max.y);
+    }
 };
 
 /// Bounding box of a collection of custom 2D points given coordinate getters
@@ -163,7 +184,7 @@ template <
     typename TVertexIter,
     typename TGetVertexCoordX,
     typename TGetVertexCoordY>
-CDT_EXPORT Box2d<T> envelopBox(
+Box2d<T> envelopBox(
     TVertexIter first,
     TVertexIter last,
     TGetVertexCoordX getX,
@@ -173,10 +194,7 @@ CDT_EXPORT Box2d<T> envelopBox(
     Box2d<T> box = {{max, max}, {-max, -max}};
     for(; first != last; ++first)
     {
-        box.min.x = std::min(getX(*first), box.min.x);
-        box.max.x = std::max(getX(*first), box.max.x);
-        box.min.y = std::min(getY(*first), box.min.y);
-        box.max.y = std::max(getY(*first), box.max.y);
+        box.envelopPoint(getX(*first), getY(*first));
     }
     return box;
 }
@@ -191,8 +209,10 @@ struct CDT_EXPORT Edge
 {
     /// Constructor
     Edge(VertInd iV1, VertInd iV2);
-    /// Assignment operator
+    /// Equals operator
     bool operator==(const Edge& other) const;
+    /// Not-equals operator
+    bool operator!=(const Edge& other) const;
     /// V1 getter
     VertInd v1() const;
     /// V2 getter
@@ -216,6 +236,13 @@ inline VertInd edge_get_v2(const Edge& e)
     return e.v2();
 }
 
+/// Get edge second vertex
+inline Edge edge_make(VertInd iV1, VertInd iV2)
+{
+    return Edge(iV1, iV2);
+}
+
+typedef std::vector<Edge> EdgeVec;                ///< Vector of edges
 typedef unordered_set<Edge> EdgeUSet;             ///< Hash table of edges
 typedef unordered_set<TriInd> TriIndUSet;         ///< Hash table of triangles
 typedef unordered_map<TriInd, TriInd> TriIndUMap; ///< Triangle hash map
@@ -244,9 +271,7 @@ struct CDT_EXPORT Triangle
     static Triangle
     make(const array<VertInd, 3>& vertices, const array<TriInd, 3>& neighbors)
     {
-        Triangle t;
-        t.vertices = vertices;
-        t.neighbors = neighbors;
+        Triangle t = {vertices, neighbors};
         return t;
     }
 };
@@ -274,11 +299,11 @@ struct CDT_EXPORT PtTriLocation
 };
 
 /// Check if location is classified as on any of three edges
-CDT_EXPORT bool isOnEdge(const PtTriLocation::Enum location);
+CDT_EXPORT bool isOnEdge(PtTriLocation::Enum location);
 
 /// Neighbor index from a on-edge location
 /// \note Call only if located on the edge!
-CDT_EXPORT Index edgeNeighbor(const PtTriLocation::Enum location);
+CDT_EXPORT Index edgeNeighbor(PtTriLocation::Enum location);
 
 /// Relative location of point to a line
 struct CDT_EXPORT PtLineLocation
@@ -292,10 +317,22 @@ struct CDT_EXPORT PtLineLocation
     };
 };
 
+/// Orient p against line v1-v2 2D: robust geometric predicate
+template <typename T>
+CDT_EXPORT T orient2D(const V2d<T>& p, const V2d<T>& v1, const V2d<T>& v2);
+
 /// Check if point lies to the left of, to the right of, or on a line
 template <typename T>
-PtLineLocation::Enum CDT_EXPORT
-locatePointLine(const V2d<T>& p, const V2d<T>& v1, const V2d<T>& v2);
+CDT_EXPORT PtLineLocation::Enum locatePointLine(
+    const V2d<T>& p,
+    const V2d<T>& v1,
+    const V2d<T>& v2,
+    T orientationTolerance = T(0));
+
+/// Classify value of orient2d predicate
+template <typename T>
+CDT_EXPORT PtLineLocation::Enum
+classifyOrientation(T orientation, T orientationTolerance = T(0));
 
 /// Check if point a lies inside of, outside of, or on an edge of a triangle
 template <typename T>
@@ -306,38 +343,38 @@ CDT_EXPORT PtTriLocation::Enum locatePointTriangle(
     const V2d<T>& v3);
 
 /// Opposed neighbor index from vertex index
-CDT_EXPORT inline Index opoNbr(const Index vertIndex);
+CDT_EXPORT CDT_INLINE_IF_HEADER_ONLY Index opoNbr(Index vertIndex);
 
 /// Opposed vertex index from neighbor index
-CDT_EXPORT inline Index opoVrt(const Index neighborIndex);
+CDT_EXPORT CDT_INLINE_IF_HEADER_ONLY Index opoVrt(Index neighborIndex);
 
 /// Index of triangle's neighbor opposed to a vertex
-CDT_EXPORT inline Index
-opposedTriangleInd(const Triangle& tri, const VertInd iVert);
+CDT_EXPORT CDT_INLINE_IF_HEADER_ONLY Index
+opposedTriangleInd(const Triangle& tri, VertInd iVert);
 
 /// Index of triangle's neighbor opposed to an edge
-CDT_EXPORT inline Index opposedTriangleInd(
-    const Triangle& tri,
-    const VertInd iVedge1,
-    const VertInd iVedge2);
+CDT_INLINE_IF_HEADER_ONLY Index
+opposedTriangleInd(const Triangle& tri, VertInd iVedge1, VertInd iVedge2);
 
 /// Index of triangle's vertex opposed to a triangle
-CDT_EXPORT inline Index
-opposedVertexInd(const Triangle& tri, const TriInd iTopo);
+CDT_EXPORT CDT_INLINE_IF_HEADER_ONLY Index
+opposedVertexInd(const Triangle& tri, TriInd iTopo);
 
 /// If triangle has a given neighbor return neighbor-index, throw otherwise
-CDT_EXPORT inline Index neighborInd(const Triangle& tri, const TriInd iTnbr);
+CDT_EXPORT CDT_INLINE_IF_HEADER_ONLY Index
+neighborInd(const Triangle& tri, TriInd iTnbr);
 
 /// If triangle has a given vertex return vertex-index, throw otherwise
-CDT_EXPORT inline Index vertexInd(const Triangle& tri, const VertInd iV);
+CDT_EXPORT CDT_INLINE_IF_HEADER_ONLY Index
+vertexInd(const Triangle& tri, VertInd iV);
 
 /// Given triangle and a vertex find opposed triangle
-CDT_EXPORT inline TriInd
-opposedTriangle(const Triangle& tri, const VertInd iVert);
+CDT_EXPORT CDT_INLINE_IF_HEADER_ONLY TriInd
+opposedTriangle(const Triangle& tri, VertInd iVert);
 
 /// Given two triangles, return vertex of first triangle opposed to the second
-CDT_EXPORT inline VertInd
-opposedVertex(const Triangle& tri, const TriInd iTopo);
+CDT_EXPORT CDT_INLINE_IF_HEADER_ONLY VertInd
+opposedVertex(const Triangle& tri, TriInd iTopo);
 
 /// Test if point lies in a circumscribed circle of a triangle
 template <typename T>
@@ -348,7 +385,7 @@ CDT_EXPORT bool isInCircumcircle(
     const V2d<T>& v3);
 
 /// Test if two vertices share at least one common triangle
-CDT_EXPORT inline bool
+CDT_EXPORT CDT_INLINE_IF_HEADER_ONLY bool
 verticesShareEdge(const TriIndVec& aTris, const TriIndVec& bTris);
 
 /// Distance between two 2D points
@@ -362,7 +399,7 @@ CDT_EXPORT T distanceSquared(const V2d<T>& a, const V2d<T>& b);
 } // namespace CDT
 
 #ifndef CDT_USE_AS_COMPILED_LIBRARY
-#include "CDTUtils_hpp.h"
+#include "CDTUtils.hpp"
 #endif
 
 //*****************************************************************************
