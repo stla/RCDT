@@ -12,8 +12,9 @@
 #' @return A list. There are three possibilities.
 #' #' \itemize{
 #'   \item \strong{If the dimension is 2} and \code{edges=NULL},
-#'         the returned value is a list with two fields:
-#'         \code{mesh} and \code{edges}. 
+#'         the returned value is a list with three fields:
+#'         \code{vertices}, \code{mesh} and \code{edges}.
+#'         The \code{vertices} field contains the given vertices.  
 #'         The \code{mesh} field is an object of
 #'         class \code{\link[rgl]{mesh3d}}, ready for plotting with the 
 #'         \strong{rgl} package. 
@@ -24,18 +25,25 @@
 #'         zeros and some ones; a border (exterior) edge is labelled by a
 #'         \code{1}. 
 #'   \item \strong{If the dimension is 2} and \code{edges} is not
-#'         \code{NULL}, the returned value is a list with
-#'         three fields: \code{mesh}, \code{edges}, and \code{constraints}. 
+#'         \code{NULL}, the returned value is a list with four fields: 
+#'         \code{vertices}, \code{mesh}, \code{edges}, and \code{constraints}. 
+#'         The \code{vertices} field contains the vertices of the triangulation. 
+#'         They coincide with the given vertices if the constraint edges do not 
+#'         intersect; otherwise there are the intersections in addition to the 
+#'         given vertices.
 #'         The \code{mesh} and \code{edges} fields are similar to the previous 
 #'         case, the unconstrained Delaunay triangulation. 
 #'         The \code{constraints} field is an integer matrix with
-#'         two columns, it represents the constraint edges. Note that in 
-#'         general these are the same edges as the ones provided by the user,
+#'         two columns, it represents the constraint edges. They are not the 
+#'         same as the ones provided by the user if these ones intersect. 
+#'         If they do not intersect, then in general these are the same,
 #'         but not always, in some rare corner cases.
 #'   \item \strong{If} \code{elevation=TRUE}, the returned value is a list with
-#'         four fields: \code{mesh}, \code{edges}, \code{volume}, 
-#'         and \code{surface}. The \code{mesh} field is an object of
-#'         class \code{\link[rgl]{mesh3d}}, ready for plotting with the 
+#'         five fields: \code{vertices}, \code{mesh}, \code{edges}, 
+#'         \code{volume}, and \code{surface}. 
+#'         The \code{vertices} field contains the given vertices.       
+#'         The \code{mesh} field is an object of class 
+#'         \code{\link[rgl]{mesh3d}}, ready for plotting with the 
 #'         \strong{rgl} package. The \code{edges} field is similar to the 
 #'         previous cases. 
 #'         The \code{volume} field provides a number, the sum of the volumes 
