@@ -238,12 +238,13 @@ delaunay <- function(points, edges = NULL, elevation = FALSE){
     cpp <- Rcpp_constrained_delaunay(tpoints, t(edges))
     triangles <- cpp[["triangles"]]
     storage.mode(triangles) <- "integer"
+    Vertices <- cpp[["vertices"]]
     if(ncol(triangles) == 0L){
       mesh <- NULL
       Edges <- NULL
     }else{
       mesh <- tmesh3d(
-        vertices = rbind(tpoints, 0),
+        vertices = rbind(Vertices, 0),
         indices = triangles
       )
       Edges <- `colnames<-`(
@@ -254,6 +255,7 @@ delaunay <- function(points, edges = NULL, elevation = FALSE){
     storage.mode(borderEdges) <- "integer" 
     out <- list(
       "mesh"        = mesh,
+      "vertices"    = t(Vertices),
       "edges"       = Edges,
       "constraints" = t(borderEdges)
     )

@@ -70,7 +70,11 @@ arma::umat Rcpp_delaunay(const arma::mat & tpoints){
 Rcpp::List Rcpp_constrained_delaunay(
     const arma::mat & tpoints, const arma::umat & tedges
 ){
-  Triangulation cdt(CDT::VertexInsertionOrder::AsProvided);
+  CDT::Triangulation<double> cdt(
+      CDT::VertexInsertionOrder::AsProvided,
+      CDT::IntersectingConstraintEdges::Resolve,
+      0.0
+  );
   // insert vertices
   const size_t npoints = tpoints.n_cols;
   std::vector<Vertex> vertices(npoints);
@@ -81,24 +85,23 @@ Rcpp::List Rcpp_constrained_delaunay(
   cdt.insertVertices(vertices);
   // insert edges
   const size_t nedges = tedges.n_cols;
-  // for(size_t i = 0; i < nedges; ++i){
-  //   const arma::urowvec edge = edges.row(i);
-  //   cdt.insert_constraint(vertices[edge[0]], vertices[edge[1]]);
-  // }
   std::vector<Edge> Edges;
   Edges.reserve(nedges);
-  //Sampleclass *qs = new Edge();
   for (size_t i = 0; i < nedges; ++i) {
     const arma::uvec col_i = tedges.col(i);
     Edges.push_back(Edge(col_i(0) - 1, col_i(1) -1));
-    // Edge *edge = new (row_i(0), row_i(1)) Edge;
-    // //edge = Edge(row_i(0), row_i(1));//(row_i(0), row_i(1)));
-    // Edges[i] = *edge;
   }
   cdt.insertEdges(Edges);
-  // cdt.eraseSuperTriangle();
   cdt.eraseOuterTrianglesAndHoles();
   //// output
+  // vertices
+  const std::vector<Vertex> cdt_vertices = cdt.vertices;
+  const size_t nvertices = cdt_vertices.size();
+  arma::mat out_vertices(2, nvertices);
+  for(size_t k = 0; k < nvertices; ++k){
+    const Vertex v = cdt_vertices[k];
+    out_vertices.col(k) = {v.x, v.y};
+  }
   // triangles
   const CDT::TriangleVec triangles = cdt.triangles;
   arma::umat out_triangles(3, triangles.size());
@@ -128,6 +131,9 @@ Rcpp::List Rcpp_constrained_delaunay(
   //   i++;
   // }
   //
-  return Rcpp::List::create(Rcpp::Named("triangles") = out_triangles,
-                            Rcpp::Named("borderEdges") = out_edges);
+  return Rcpp::List::create(
+    Rcpp::Named("vertices") = out_vertices,
+    Rcpp::Named("triangles") = out_triangles,
+    Rcpp::Named("borderEdges") = out_edges
+  );
 }
