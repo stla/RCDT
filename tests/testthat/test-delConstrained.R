@@ -1,4 +1,5 @@
 test_that("2d constrained Delaunay", {
+  skip_on_os("mac")
   nsides <- 12L
   angles <- seq(0, 2*pi, length.out = nsides+1L)[-1L]
   points <- cbind(cos(angles), sin(angles))
