@@ -25,6 +25,6 @@ del <- delaunay(vertices, edges)
 
 opar <- par(mar = c(0, 0, 0, 0))
 plotDelaunay(
-  del, asp = 1, color = "distinct", col_borders = "navy", lty_edges = 2, 
+  del, asp = 1, fillcolor = "distinct", col_borders = "navy", lty_edges = 2, 
   lwd_borders = 3, lwd_edges = 2, xlab = NA, ylab = NA, axes = FALSE)
 par(opar)
