@@ -9,9 +9,9 @@ plotDelaunay(
   col_edges = "black",
   col_borders = "red",
   col_constraints = "green",
-  fillcolor = "distinct",
-  hue = "random",
-  luminosity = "light",
+  fillcolor = "random",
+  distinctArgs = list(seedcolors = c("#ff0000", "#00ff00", "#0000ff")),
+  randomArgs = list(hue = "random", luminosity = "dark"),
   lty_edges = par("lty"),
   lwd_edges = par("lwd"),
   lty_borders = par("lty"),
@@ -38,14 +38,17 @@ of the constraint edges which are not border edges;
 
 \item{fillcolor}{controls the filling colors of the triangles, either
 \code{NULL} for no color, a single color, \code{"random"} to get multiple
-colors with \code{\link[randomcoloR]{randomColor}}, \code{"distinct"}
-get multiple colors with \code{\link[randomcoloR]{distinctColorPalette}}, 
+colors with \code{\link[colorsGen]{randomColor}}, \code{"distinct"}
+get multiple colors with \code{\link[Polychrome]{createPalette}}, 
 or a vector of colors, one color for each triangle; in this case the 
 the colors will be assigned in the order they are provided but after the 
 triangles have been circularly ordered (see the last example)}
 
-\item{hue, luminosity}{if \code{color = "random"}, these arguments are passed
-to \code{\link[randomcoloR]{randomColor}}}
+\item{distinctArgs}{if \code{fillcolor = "distinct"}, a list of arguments
+passed to \code{\link[Polychrome]{createPalette}}}
+
+\item{randomArgs}{if \code{fillcolor = "random"}, a list of arguments passed
+to \code{\link[colorsGen]{randomColor}}}
 
 \item{lty_edges, lwd_edges}{graphical parameters for the edges which are not
 border edges nor constraint edges}
@@ -79,7 +82,7 @@ d <- delaunay(pts)
 opar <- par(mar = c(0, 0, 0, 0))
 plotDelaunay(
   d, type = "n", xlab = NA, ylab = NA, axes = FALSE, asp = 1, 
-  fillcolor = "random", luminosity = "dark", lwd_borders = 3
+  fillcolor = "random", lwd_borders = 3
 )
 par(opar)
 
