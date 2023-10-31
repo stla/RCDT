@@ -38,7 +38,7 @@ public:
             max = V2d_t::make(std::max(max.x, it->x), std::max(max.y, it->y));
         }
         m_kdTree = KDTree_t(min, max);
-        for(VertInd i = 0; i < points.size(); ++i)
+        for(VertInd i(0); i < points.size(); ++i)
         {
             m_kdTree.insert(i, points);
         }
@@ -54,6 +54,16 @@ public:
         const std::vector<V2d<TCoordType> >& points) const
     {
         return m_kdTree.nearest(pos, points).second;
+    }
+
+    CDT::VertInd size() const
+    {
+        return m_kdTree.size();
+    }
+
+    bool empty() const
+    {
+        return !size();
     }
 
 private:

@@ -29,7 +29,7 @@ del <- delaunay(vertices, edges)
 
 # plot
 opar <- par(mar = c(0, 0, 0, 0))
-plotDelaunay(del, asp = 1, color = "distinct", lwd_borders = 3,
+plotDelaunay(del, asp = 1, fillcolor = "distinct", lwd_borders = 3,
              xlab = NA, ylab = NA, axes = FALSE)
 par(opar)
 

@@ -1,7 +1,9 @@
 # RCDT 1.3.0 (2023-10-31)
 
-The package does no longer depend on 'randomcoloR', but it now depends on 
+* The package does no longer depend on 'randomcoloR', but it now depends on 
 'colorsGen' and 'Polychrome'.
+
+* Upgraded CDT.
 
 
 # RCDT 1.2.1 (2022-08-13)

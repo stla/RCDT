@@ -42,8 +42,14 @@ struct CDT_EXPORT VertexInsertionOrder
      */
     enum Enum
     {
-        Randomized, ///< vertices will be inserted in random order
-        AsProvided, ///< vertices will be inserted in the same order as provided
+        /**
+         * Automatic insertion order optimized for better performance
+         * @details breadth-first traversal of a Kd-tree for initial bulk-load,
+         * randomized for subsequent insertions
+         */
+        Auto,
+        /// insert vertices in same order they are provided
+        AsProvided,
     };
 };
 
@@ -85,9 +91,6 @@ struct CDT_EXPORT IntersectingConstraintEdges
 typedef unsigned short LayerDepth;
 typedef LayerDepth BoundaryOverlapCount;
 
-/// Triangles by vertex index
-typedef std::vector<TriIndVec> VerticesTriangles;
-
 /**
  * @defgroup Triangulation Triangulation Class
  * Class performing triangulations.
@@ -110,13 +113,6 @@ public:
     V2dVec vertices;                     ///< triangulation's vertices
     TriangleVec triangles;               ///< triangulation's triangles
     EdgeUSet fixedEdges; ///< triangulation's constraints (fixed edges)
-    /**
-     * triangles adjacent to each vertex
-     * @note will be reset to empty when super-triangle is removed and
-     * triangulation is finalized. To re-calculate adjacent triangles use
-     * CDT::calculateTrianglesByVertex helper
-     */
-    VerticesTriangles vertTris;
 
     /** Stores count of overlapping boundaries for a fixed edge. If no entry is
      * present for an edge: no boundaries overlap.
@@ -141,7 +137,7 @@ public:
      * Constructor
      * @param vertexInsertionOrder strategy used for ordering vertex insertions
      */
-    Triangulation(VertexInsertionOrder::Enum vertexInsertionOrder);
+    explicit Triangulation(VertexInsertionOrder::Enum vertexInsertionOrder);
     /**
      * Constructor
      * @param vertexInsertionOrder strategy used for ordering vertex insertions
@@ -335,9 +331,20 @@ public:
      * outside. Please call it when you know what you are doing.
      * @param iT first triangle
      * @param iTopo second triangle
-
      */
     void flipEdge(TriInd iT, TriInd iTopo);
+
+    void flipEdge(
+        TriInd iT,
+        TriInd iTopo,
+        VertInd v1,
+        VertInd v2,
+        VertInd v3,
+        VertInd v4,
+        TriInd n1,
+        TriInd n2,
+        TriInd n3,
+        TriInd n4);
 
     /**
      * Remove triangles with specified indices.
@@ -345,87 +352,156 @@ public:
      * @param removedTriangles indices of triangles to remove
      */
     void removeTriangles(const TriIndUSet& removedTriangles);
+
+    /// Access internal vertex adjacent triangles
+    TriIndVec& VertTrisInternal();
+    /// Access internal vertex adjacent triangles
+    const TriIndVec& VertTrisInternal() const;
     /// @}
 
 private:
     /*____ Detail __*/
     void addSuperTriangle(const Box2d<T>& box);
-    void addNewVertex(const V2d<T>& pos, const TriIndVec& tris);
+    void addNewVertex(const V2d<T>& pos, TriInd iT);
     void insertVertex(VertInd iVert);
+    void insertVertex(VertInd iVert, VertInd walkStart);
     void ensureDelaunayByEdgeFlips(
-        const V2d<T>& v,
-        VertInd iVert,
+        const V2d<T>& v1,
+        VertInd iV1,
         std::stack<TriInd>& triStack);
     /// Flip fixed edges and return a list of flipped fixed edges
-    std::vector<Edge> insertVertex_FlipFixedEdges(VertInd iVert);
+    std::vector<Edge> insertVertex_FlipFixedEdges(VertInd iV1);
+
+    /// State for an iteration of triangulate pseudo-polygon
+    typedef tuple<IndexSizeType, IndexSizeType, TriInd, TriInd, Index>
+        TriangulatePseudopolygonTask;
+
     /**
      * Insert an edge into constraint Delaunay triangulation
      * @param edge edge to insert
      * @param originalEdge original edge inserted edge is part of
+     * @param[in,out] remaining parts of the edge that still need to
+     * be inserted
+     * @param[in,out] tppIterations stack to be used for storing iterations of
+     * triangulating pseudo-polygon
+     * @note in-out state (@param remaining @param tppIterations) is shared
+     * between different runs for performance gains (reducing memory
+     * allocations)
      */
-    void insertEdge(Edge edge, Edge originalEdge);
+    void insertEdge(
+        Edge edge,
+        Edge originalEdge,
+        EdgeVec& remaining,
+        std::vector<TriangulatePseudopolygonTask>& tppIterations);
+
+    /**
+     * Insert an edge or its part into constraint Delaunay triangulation
+     * @param edge edge to insert
+     * @param originalEdge original edge inserted edge is part of
+     * @param[in,out] remainingStack parts of the edge that still need to
+     * be inserted
+     * @param[in,out] tppIterations stack to be used for storing iterations of
+     * triangulating pseudo-polygon
+     * @note in-out state (@param remaining @param tppIterations) is shared
+     * between different runs for performance gains (reducing memory
+     * allocations)
+     */
+    void insertEdgeIteration(
+        Edge edge,
+        Edge originalEdge,
+        EdgeVec& remaining,
+        std::vector<TriangulatePseudopolygonTask>& tppIterations);
+
+    /// State for iteration of conforming to edge
+    typedef tuple<Edge, EdgeVec, BoundaryOverlapCount> ConformToEdgeTask;
+
     /**
      * Conform Delaunay triangulation to a fixed edge by recursively inserting
      * mid point of the edge and then conforming to its halves
      * @param edge fixed edge to conform to
-     * @param originalEdges original edges that new edge is piece of
+     * @param originals original edges that new edge is piece of
      * @param overlaps count of overlapping boundaries at the edge. Only used
      * when re-introducing edge with overlaps > 0
-     * @param orientationTolerance tolerance for orient2d predicate,
-     * values [-tolerance,+tolerance] are considered as 0.
+     * @param[in,out] remaining remaining edge parts to be conformed to
+     * @note in-out state (@param remaining @param reintroduce) is shared
+     * between different runs for performance gains (reducing memory
+     * allocations)
      */
     void conformToEdge(
         Edge edge,
-        EdgeVec originalEdges,
-        BoundaryOverlapCount overlaps);
+        EdgeVec originals,
+        BoundaryOverlapCount overlaps,
+        std::vector<ConformToEdgeTask>& remaining);
+
+    /**
+     * Iteration of conform to fixed edge.
+     * @param edge fixed edge to conform to
+     * @param originals original edges that new edge is piece of
+     * @param overlaps count of overlapping boundaries at the edge. Only used
+     * when re-introducing edge with overlaps > 0
+     * @param[in,out] remaining remaining edge parts
+     * @note in-out state (@param remaining @param reintroduce) is shared
+     * between different runs for performance gains (reducing memory
+     * allocations)
+     */
+    void conformToEdgeIteration(
+        Edge edge,
+        const EdgeVec& originals,
+        BoundaryOverlapCount overlaps,
+        std::vector<ConformToEdgeTask>& remaining);
+
     tuple<TriInd, VertInd, VertInd> intersectedTriangle(
         VertInd iA,
-        const std::vector<TriInd>& candidates,
         const V2d<T>& a,
         const V2d<T>& b,
         T orientationTolerance = T(0)) const;
     /// Returns indices of three resulting triangles
-    std::stack<TriInd> insertPointInTriangle(VertInd v, TriInd iT);
+    std::stack<TriInd> insertVertexInsideTriangle(VertInd v, TriInd iT);
     /// Returns indices of four resulting triangles
-    std::stack<TriInd> insertPointOnEdge(VertInd v, TriInd iT1, TriInd iT2);
+    std::stack<TriInd> insertVertexOnEdge(VertInd v, TriInd iT1, TriInd iT2);
     array<TriInd, 2> trianglesAt(const V2d<T>& pos) const;
-    array<TriInd, 2> walkingSearchTrianglesAt(const V2d<T>& pos) const;
+    array<TriInd, 2>
+    walkingSearchTrianglesAt(const V2d<T>& pos, VertInd startVertex) const;
     TriInd walkTriangles(VertInd startVertex, const V2d<T>& pos) const;
+    /// Given triangle and its vertex find opposite triangle and the other three
+    /// vertices and surrounding neighbors
+    void edgeFlipInfo(
+        TriInd iT,
+        VertInd iV1,
+        TriInd& iTopo,
+        VertInd& iV2,
+        VertInd& iV3,
+        VertInd& iV4,
+        TriInd& n1,
+        TriInd& n2,
+        TriInd& n3,
+        TriInd& n4);
     bool isFlipNeeded(
         const V2d<T>& v,
-        VertInd iV,
         VertInd iV1,
         VertInd iV2,
-        VertInd iV3) const;
-    bool
-    isFlipNeeded(const V2d<T>& v, TriInd iT, TriInd iTopo, VertInd iVert) const;
+        VertInd iV3,
+        VertInd iV4) const;
     void changeNeighbor(TriInd iT, TriInd oldNeighbor, TriInd newNeighbor);
     void changeNeighbor(
         TriInd iT,
         VertInd iVedge1,
         VertInd iVedge2,
         TriInd newNeighbor);
-    void addAdjacentTriangle(VertInd iVertex, TriInd iTriangle);
-    void
-    addAdjacentTriangles(VertInd iVertex, TriInd iT1, TriInd iT2, TriInd iT3);
-    void addAdjacentTriangles(
-        VertInd iVertex,
-        TriInd iT1,
-        TriInd iT2,
-        TriInd iT3,
-        TriInd iT4);
-    void removeAdjacentTriangle(VertInd iVertex, TriInd iTriangle);
-    TriInd triangulatePseudopolygon(
-        VertInd ia,
-        VertInd ib,
-        std::vector<VertInd>::const_iterator pointsFirst,
-        std::vector<VertInd>::const_iterator pointsLast);
-    VertInd findDelaunayPoint(
-        VertInd ia,
-        VertInd ib,
-        std::vector<VertInd>::const_iterator pointsFirst,
-        std::vector<VertInd>::const_iterator pointsLast) const;
-    TriInd pseudopolyOuterTriangle(VertInd ia, VertInd ib) const;
+    void triangulatePseudopolygon(
+        const std::vector<VertInd>& poly,
+        const std::vector<TriInd>& outerTris,
+        TriInd iT,
+        TriInd iN,
+        std::vector<TriangulatePseudopolygonTask>& iterations);
+    void triangulatePseudopolygonIteration(
+        const std::vector<VertInd>& poly,
+        const std::vector<TriInd>& outerTris,
+        std::vector<TriangulatePseudopolygonTask>& iterations);
+    IndexSizeType findDelaunayPoint(
+        const std::vector<VertInd>& poly,
+        IndexSizeType iA,
+        IndexSizeType iB) const;
     TriInd addTriangle(const Triangle& t); // note: invalidates iterators!
     TriInd addTriangle(); // note: invalidates triangle iterators!
     /**
@@ -435,9 +511,40 @@ private:
      */
     void finalizeTriangulation(const TriIndUSet& removedTriangles);
     TriIndUSet growToBoundary(std::stack<TriInd> seeds) const;
-    void fixEdge(const Edge& edge, BoundaryOverlapCount overlaps);
     void fixEdge(const Edge& edge);
     void fixEdge(const Edge& edge, const Edge& originalEdge);
+    /**
+     *  Split existing constraint (fixed) edge
+     * @param edge fixed edge to split
+     * @param iSplitVert index of the vertex to be used as a split vertex
+     */
+    void splitFixedEdge(const Edge& edge, const VertInd iSplitVert);
+    /**
+     * Add a vertex that splits an edge into the triangulation
+     * @param splitVert position of split vertex
+     * @param iT index of a first triangle adjacent to the split edge
+     * @param iTopo index of a second triangle adjacent to the split edge
+     * (opposed to the first triangle)
+     * @return index of a newly added split vertex
+     */
+    VertInd addSplitEdgeVertex(
+        const V2d<T>& splitVert,
+        const TriInd iT,
+        const TriInd iTopo);
+    /**
+     * Split fixed edge and add a split vertex into the triangulation
+     * @param edge fixed edge to split
+     * @param splitVert position of split vertex
+     * @param iT index of a first triangle adjacent to the split edge
+     * @param iTopo index of a second triangle adjacent to the split edge
+     * (opposed to the first triangle)
+     * @return index of a newly added split vertex
+     */
+    VertInd splitFixedEdgeAt(
+        const Edge& edge,
+        const V2d<T>& splitVert,
+        const TriInd iT,
+        const TriInd iTopo);
     /**
      * Flag triangle as dummy
      * @note Advanced method for manually modifying the triangulation from
@@ -471,6 +578,22 @@ private:
         LayerDepth layerDepth,
         std::vector<LayerDepth>& triDepths) const;
 
+    void insertVertices_AsProvided(VertInd superGeomVertCount);
+    void insertVertices_Randomized(VertInd superGeomVertCount);
+    void insertVertices_KDTreeBFS(
+        VertInd superGeomVertCount,
+        V2d<T> boxMin,
+        V2d<T> boxMax);
+    std::pair<TriInd, TriInd> edgeTriangles(VertInd a, VertInd b) const;
+    bool hasEdge(VertInd a, VertInd b) const;
+    void setAdjacentTriangle(const VertInd v, const TriInd t);
+    void pivotVertexTriangleCW(VertInd v);
+    /// Add vertex to nearest-point locator if locator is initialized
+    void tryAddVertexToLocator(const VertInd v);
+    /// Perform lazy initialization of nearest-point locator after the Kd-tree
+    /// BFS bulk load if necessary
+    void tryInitNearestPointLocator();
+
     std::vector<TriInd> m_dummyTris;
     TNearPointLocator m_nearPtLocator;
     std::size_t m_nTargetVerts;
@@ -478,6 +601,7 @@ private:
     VertexInsertionOrder::Enum m_vertexInsertionOrder;
     IntersectingConstraintEdges::Enum m_intersectingEdgesStrategy;
     T m_minDistToConstraintEdge;
+    TriIndVec m_vertTris; /// one triangle adjacent to each vertex
 };
 
 /// @}
@@ -486,16 +610,46 @@ private:
 namespace detail
 {
 
-static mt19937 randGenerator(9001);
+/// SplitMix64  pseudo-random number generator
+struct SplitMix64RandGen
+{
+    typedef unsigned long long uint64;
+    uint64 m_state;
+    explicit SplitMix64RandGen(uint64 state)
+        : m_state(state)
+    {}
+    explicit SplitMix64RandGen()
+        : m_state(0)
+    {}
+    uint64 operator()()
+    {
+        uint64 z = (m_state += 0x9e3779b97f4a7c15);
+        z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9;
+        z = (z ^ (z >> 27)) * 0x94d049bb133111eb;
+        return z ^ (z >> 31);
+    }
+};
 
 template <class RandomIt>
 void random_shuffle(RandomIt first, RandomIt last)
 {
+    detail::SplitMix64RandGen prng;
     typename std::iterator_traits<RandomIt>::difference_type i, n;
     n = last - first;
     for(i = n - 1; i > 0; --i)
     {
-        std::swap(first[i], first[randGenerator() % (i + 1)]);
+        std::swap(first[i], first[prng() % (i + 1)]);
+    }
+}
+
+// backport from c++11
+template <class ForwardIt, class T>
+void iota(ForwardIt first, ForwardIt last, T value)
+{
+    while(first != last)
+    {
+        *first++ = value;
+        ++value;
     }
 }
 
@@ -521,33 +675,35 @@ void Triangulation<T, TNearPointLocator>::insertVertices(
             "Triangulation was finalized with 'erase...' method. Inserting new "
             "vertices is not possible");
     }
-    detail::randGenerator.seed(9001); // ensure deterministic behavior
-    if(vertices.empty())
+
+    const bool isFirstTime = vertices.empty();
+    const T max = std::numeric_limits<T>::max();
+    Box2d<T> box = {{max, max}, {-max, -max}};
+    if(vertices.empty()) // called first time
     {
-        addSuperTriangle(envelopBox<T>(first, last, getX, getY));
+        box = envelopBox<T>(first, last, getX, getY);
+        addSuperTriangle(box);
     }
+    tryInitNearestPointLocator();
 
-    const std::size_t nExistingVerts = vertices.size();
-
-    vertices.reserve(nExistingVerts + std::distance(first, last));
+    const VertInd nExistingVerts = static_cast<VertInd>(vertices.size());
+    const VertInd nVerts =
+        static_cast<VertInd>(nExistingVerts + std::distance(first, last));
+    // optimization, try to pre-allocate tris
+    triangles.reserve(triangles.size() + 2 * nVerts);
+    vertices.reserve(nVerts);
+    m_vertTris.reserve(nVerts);
     for(TVertexIter it = first; it != last; ++it)
-        addNewVertex(V2d<T>::make(getX(*it), getY(*it)), TriIndVec());
+        addNewVertex(V2d<T>::make(getX(*it), getY(*it)), noNeighbor);
 
     switch(m_vertexInsertionOrder)
     {
     case VertexInsertionOrder::AsProvided:
-        for(TVertexIter it = first; it != last; ++it)
-            insertVertex(VertInd(nExistingVerts + std::distance(first, it)));
+        insertVertices_AsProvided(nExistingVerts);
         break;
-    case VertexInsertionOrder::Randomized:
-        std::vector<VertInd> ii(std::distance(first, last));
-        typedef std::vector<VertInd>::iterator Iter;
-        VertInd value = static_cast<VertInd>(nExistingVerts);
-        for(Iter it = ii.begin(); it != ii.end(); ++it, ++value)
-            *it = value;
-        detail::random_shuffle(ii.begin(), ii.end());
-        for(Iter it = ii.begin(); it != ii.end(); ++it)
-            insertVertex(*it);
+    case VertexInsertionOrder::Auto:
+        isFirstTime ? insertVertices_KDTreeBFS(nExistingVerts, box.min, box.max)
+                    : insertVertices_Randomized(nExistingVerts);
         break;
     }
 }
@@ -563,6 +719,9 @@ void Triangulation<T, TNearPointLocator>::insertEdges(
     TGetEdgeVertexStart getStart,
     TGetEdgeVertexEnd getEnd)
 {
+    // state shared between different runs for performance gains
+    std::vector<TriangulatePseudopolygonTask> tppIterations;
+    EdgeVec remaining;
     if(isFinalized())
     {
         throw std::runtime_error(
@@ -575,7 +734,7 @@ void Triangulation<T, TNearPointLocator>::insertEdges(
         const Edge edge(
             VertInd(getStart(*first) + m_nTargetVerts),
             VertInd(getEnd(*first) + m_nTargetVerts));
-        insertEdge(edge, edge);
+        insertEdge(edge, edge, remaining, tppIterations);
     }
     eraseDummies();
 }
@@ -597,13 +756,16 @@ void Triangulation<T, TNearPointLocator>::conformToEdges(
             "Triangulation was finalized with 'erase...' method. Conforming to "
             "new edges is not possible");
     }
+    tryInitNearestPointLocator();
+    // state shared between different runs for performance gains
+    std::vector<ConformToEdgeTask> remaining;
     for(; first != last; ++first)
     {
         // +3 to account for super-triangle vertices
         const Edge e(
             VertInd(getStart(*first) + m_nTargetVerts),
             VertInd(getEnd(*first) + m_nTargetVerts));
-        conformToEdge(e, EdgeVec(1, e), 0);
+        conformToEdge(e, EdgeVec(1, e), 0, remaining);
     }
     eraseDummies();
 }

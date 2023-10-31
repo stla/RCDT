@@ -170,64 +170,88 @@ CDT_INLINE_IF_HEADER_ONLY Index opoVrt(const Index neighborIndex)
 }
 
 CDT_INLINE_IF_HEADER_ONLY Index
-opposedTriangleInd(const Triangle& tri, const VertInd iVert)
+opposedTriangleInd(const VerticesArr3& vv, const VertInd iVert)
 {
-    for(Index vi = Index(0); vi < Index(3); ++vi)
-        if(iVert == tri.vertices[vi])
-            return opoNbr(vi);
-    throw std::runtime_error("Could not find opposed triangle index");
+    assert(vv[0] == iVert || vv[1] == iVert || vv[2] == iVert);
+    if(vv[0] == iVert)
+        return Index(1);
+    if(vv[1] == iVert)
+        return Index(2);
+    return Index(0);
 }
 
-CDT_INLINE_IF_HEADER_ONLY Index opposedTriangleInd(
-    const Triangle& tri,
+CDT_INLINE_IF_HEADER_ONLY Index edgeNeighborInd(
+    const VerticesArr3& vv,
     const VertInd iVedge1,
     const VertInd iVedge2)
 {
-    for(Index vi = Index(0); vi < Index(3); ++vi)
+    assert(vv[0] == iVedge1 || vv[1] == iVedge1 || vv[2] == iVedge1);
+    assert(vv[0] == iVedge2 || vv[1] == iVedge2 || vv[2] == iVedge2);
+    assert(
+        (vv[0] != iVedge1 && vv[0] != iVedge2) ||
+        (vv[1] != iVedge1 && vv[1] != iVedge2) ||
+        (vv[2] != iVedge1 && vv[2] != iVedge2));
+    /*
+     *      vv[2]
+     *       /\
+     *  n[2]/  \n[1]
+     *     /____\
+     * vv[0] n[0] vv[1]
+     */
+    if(vv[0] == iVedge1)
     {
-        const VertInd iVert = tri.vertices[vi];
-        if(iVert != iVedge1 && iVert != iVedge2)
-            return opoNbr(vi);
+        if(vv[1] == iVedge2)
+            return Index(0);
+        return Index(2);
     }
-    throw std::runtime_error("Could not find opposed-to-edge triangle index");
+    if(vv[0] == iVedge2)
+    {
+        if(vv[1] == iVedge1)
+            return Index(0);
+        return Index(2);
+    }
+    return Index(1);
 }
 
 CDT_INLINE_IF_HEADER_ONLY Index
-opposedVertexInd(const Triangle& tri, const TriInd iTopo)
+opposedVertexInd(const NeighborsArr3& nn, const TriInd iTopo)
 {
-    for(Index ni = Index(0); ni < Index(3); ++ni)
-        if(iTopo == tri.neighbors[ni])
-            return opoVrt(ni);
-    throw std::runtime_error("Could not find opposed vertex index");
+    assert(nn[0] == iTopo || nn[1] == iTopo || nn[2] == iTopo);
+    if(nn[0] == iTopo)
+        return Index(2);
+    if(nn[1] == iTopo)
+        return Index(0);
+    return Index(1);
 }
 
 CDT_INLINE_IF_HEADER_ONLY Index
-neighborInd(const Triangle& tri, const TriInd iTnbr)
+vertexInd(const VerticesArr3& vv, const VertInd iV)
 {
-    for(Index ni = Index(0); ni < Index(3); ++ni)
-        if(iTnbr == tri.neighbors[ni])
-            return ni;
-    throw std::runtime_error("Could not find neighbor triangle index");
-}
-
-CDT_INLINE_IF_HEADER_ONLY Index vertexInd(const Triangle& tri, const VertInd iV)
-{
-    for(Index i = Index(0); i < Index(3); ++i)
-        if(iV == tri.vertices[i])
-            return i;
-    throw std::runtime_error("Could not find vertex index in triangle");
+    assert(vv[0] == iV || vv[1] == iV || vv[2] == iV);
+    if(vv[0] == iV)
+        return Index(0);
+    if(vv[1] == iV)
+        return Index(1);
+    return Index(2);
 }
 
 CDT_INLINE_IF_HEADER_ONLY TriInd
 opposedTriangle(const Triangle& tri, const VertInd iVert)
 {
-    return tri.neighbors[opposedTriangleInd(tri, iVert)];
+    return tri.neighbors[opposedTriangleInd(tri.vertices, iVert)];
 }
 
 CDT_INLINE_IF_HEADER_ONLY VertInd
 opposedVertex(const Triangle& tri, const TriInd iTopo)
 {
-    return tri.vertices[opposedVertexInd(tri, iTopo)];
+    return tri.vertices[opposedVertexInd(tri.neighbors, iTopo)];
+}
+
+/// Given triangle and an edge find neighbor sharing the edge
+CDT_INLINE_IF_HEADER_ONLY TriInd
+edgeNeighbor(const Triangle& tri, VertInd iVedge1, VertInd iVedge2)
+{
+    return tri.neighbors[edgeNeighborInd(tri.vertices, iVedge1, iVedge2)];
 }
 
 template <typename T>
@@ -274,6 +298,11 @@ template <typename T>
 T distanceSquared(const V2d<T>& a, const V2d<T>& b)
 {
     return distanceSquared(a.x, a.y, b.x, b.y);
+}
+
+bool touchesSuperTriangle(const Triangle& t)
+{
+    return t.vertices[0] < 3 || t.vertices[1] < 3 || t.vertices[2] < 3;
 }
 
 } // namespace CDT

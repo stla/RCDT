@@ -12,6 +12,8 @@
 #include <cassert>
 #include <limits>
 
+namespace CDT
+{
 namespace KDTree
 {
 
@@ -60,7 +62,7 @@ public:
         /// Create empty leaf
         Node()
         {
-            setChildren(0, 0);
+            setChildren(node_index(0), node_index(0));
             data.reserve(NumVerticesInLeaf);
         }
         /// Children setter for convenience
@@ -85,6 +87,7 @@ public:
         , m_max(point_type::make(
               std::numeric_limits<coord_type>::max(),
               std::numeric_limits<coord_type>::max()))
+        , m_size(0)
         , m_isRootBoxInitialized(false)
         , m_tasksStack(InitialStackDepth, NearestTask())
     {
@@ -96,10 +99,16 @@ public:
         : m_rootDir(NodeSplitDirection::X)
         , m_min(min)
         , m_max(max)
+        , m_size(0)
         , m_isRootBoxInitialized(true)
         , m_tasksStack(InitialStackDepth, NearestTask())
     {
         m_root = addNewNode();
+    }
+
+    CDT::VertInd size() const
+    {
+        return m_size;
     }
 
     /// Insert a point into kd-tree
@@ -109,6 +118,7 @@ public:
     void
     insert(const point_index& iPoint, const std::vector<point_type>& points)
     {
+        ++m_size;
         // if point is outside root, extend tree by adding new roots
         const point_type& pos = points[iPoint];
         while(!isInsideBox(pos, m_min, m_max))
@@ -366,6 +376,8 @@ private:
     NodeSplitDirection::Enum m_rootDir;
     point_type m_min;
     point_type m_max;
+    CDT::VertInd m_size;
+
     bool m_isRootBoxInitialized;
 
     // used for nearest query
@@ -378,16 +390,16 @@ private:
         NearestTask()
         {}
         NearestTask(
-            const node_index node,
-            const point_type& min,
-            const point_type& max,
-            const NodeSplitDirection::Enum dir,
-            const coord_type distSq)
-            : node(node)
-            , min(min)
-            , max(max)
-            , dir(dir)
-            , distSq(distSq)
+            const node_index node_,
+            const point_type& min_,
+            const point_type& max_,
+            const NodeSplitDirection::Enum dir_,
+            const coord_type distSq_)
+            : node(node_)
+            , min(min_)
+            , max(max_)
+            , dir(dir_)
+            , distSq(distSq_)
         {}
     };
     // allocated in class (not in the 'nearest' method) for better performance
@@ -395,5 +407,6 @@ private:
 };
 
 } // namespace KDTree
+} // namespace CDT
 
 #endif // header guard

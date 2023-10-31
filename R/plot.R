@@ -218,7 +218,7 @@ plotDelaunay <- function(
   otherEdges <- subtractEdges(allEdges, specialEdges)
   if(!isFalsy(col_edges)){
     edges <- otherEdges
-    for(i in seq_along(nrow(edges))){
+    for(i in seq_len(nrow(edges))){
       edge <- edges[i, ]
       p0 <- vertices[edge[1L], ]
       p1 <- vertices[edge[2L], ]
@@ -230,7 +230,7 @@ plotDelaunay <- function(
   }
   if(!isFalsy(col_borders)){
     edges <- borderEdges
-    for(i in seq_along(nrow(edges))){
+    for(i in seq_len(nrow(edges))){
       edge <- edges[i, ]
       p0 <- vertices[edge[1L], ]
       p1 <- vertices[edge[2L], ]
@@ -242,7 +242,7 @@ plotDelaunay <- function(
   }
   if(!is.null(constraintEdges) && !isFalsy(col_constraints)){
     edges <- constraintEdges
-    for(i in seq_along(nrow(edges))){
+    for(i in seq_len(nrow(edges))){
       edge <- edges[i, ]
       p0 <- vertices[edge[1L], ]
       p1 <- vertices[edge[2L], ]

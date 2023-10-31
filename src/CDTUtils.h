@@ -40,13 +40,14 @@ typedef char couldnt_parse_cxx_standard[-1]; ///< Error: couldn't parse standard
 #define CDT_EXPORT
 #endif
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <limits>
 #include <vector>
 
-#ifdef CDT_USE_BOOST
-#include <boost/container/flat_set.hpp>
+#ifdef CDT_USE_STRONG_TYPING
+#include <boost/serialization/strong_typedef.hpp>
 #endif
 
 // use fall-backs for c++11 features
@@ -54,7 +55,6 @@ typedef char couldnt_parse_cxx_standard[-1]; ///< Error: couldn't parse standard
 
 #include <array>
 #include <functional>
-#include <random>
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
@@ -63,7 +63,6 @@ namespace CDT
 using std::array;
 using std::get;
 using std::make_tuple;
-using std::mt19937;
 using std::tie;
 using std::tuple;
 using std::unordered_map;
@@ -73,7 +72,6 @@ using std::unordered_set;
 #else
 #include <boost/array.hpp>
 #include <boost/functional/hash.hpp>
-#include <boost/random.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
@@ -86,7 +84,6 @@ using boost::tie;
 using boost::tuple;
 using boost::unordered_map;
 using boost::unordered_set;
-using boost::random::mt19937;
 } // namespace CDT
 #endif
 
@@ -131,26 +128,29 @@ typedef unsigned long long IndexSizeType;
 typedef unsigned int IndexSizeType;
 #endif
 
-#ifndef CDT_USE_STRONG_TYPING
-/// Index in triangle
-typedef unsigned char Index;
-/// Vertex index
-typedef IndexSizeType VertInd;
-/// Triangle index
-typedef IndexSizeType TriInd;
-#else
+#ifdef CDT_USE_STRONG_TYPING
 /// Index in triangle
 BOOST_STRONG_TYPEDEF(unsigned char, Index);
 /// Vertex index
 BOOST_STRONG_TYPEDEF(IndexSizeType, VertInd);
 /// Triangle index
 BOOST_STRONG_TYPEDEF(IndexSizeType, TriInd);
+#else
+/// Index in triangle
+typedef unsigned char Index;
+/// Vertex index
+typedef IndexSizeType VertInd;
+/// Triangle index
+typedef IndexSizeType TriInd;
 #endif
 
+/// Constant representing no valid value for index
+const static IndexSizeType
+    invalidIndex(std::numeric_limits<IndexSizeType>::max());
 /// Constant representing no valid neighbor for a triangle
-const static TriInd noNeighbor(std::numeric_limits<TriInd>::max());
+const static TriInd noNeighbor(invalidIndex);
 /// Constant representing no valid vertex for a triangle
-const static VertInd noVertex(std::numeric_limits<VertInd>::max());
+const static VertInd noVertex(invalidIndex);
 
 typedef std::vector<TriInd> TriIndVec;  ///< Vector of triangle indices
 typedef array<VertInd, 3> VerticesArr3; ///< array of three vertex indices
@@ -246,18 +246,15 @@ typedef std::vector<Edge> EdgeVec;                ///< Vector of edges
 typedef unordered_set<Edge> EdgeUSet;             ///< Hash table of edges
 typedef unordered_set<TriInd> TriIndUSet;         ///< Hash table of triangles
 typedef unordered_map<TriInd, TriInd> TriIndUMap; ///< Triangle hash map
-#ifdef CDT_USE_BOOST
-/// Flat hash table of triangles
-typedef boost::container::flat_set<TriInd> TriIndFlatUSet;
-#endif
 
-/// Triangulation triangle (CCW winding)
-/* Counter-clockwise winding:
-       v3
-       /\
-    n3/  \n2
-     /____\
-   v1  n1  v2                 */
+/// Triangulation triangle (counter-clockwise winding)
+/*
+ *      v3
+ *      /\
+ *   n3/  \n2
+ *    /____\
+ *  v1  n1  v2
+ */
 struct CDT_EXPORT Triangle
 {
     VerticesArr3 vertices;   ///< triangle's three vertices
@@ -273,6 +270,38 @@ struct CDT_EXPORT Triangle
     {
         Triangle t = {vertices, neighbors};
         return t;
+    }
+
+    /// Next triangle adjacent to a vertex (clockwise)
+    /// @returns pair of next triangle and the other vertex of a common edge
+    std::pair<TriInd, VertInd> next(const VertInd i) const
+    {
+        assert(vertices[0] == i || vertices[1] == i || vertices[2] == i);
+        if(vertices[0] == i)
+        {
+            return std::make_pair(neighbors[0], vertices[1]);
+        }
+        if(vertices[1] == i)
+        {
+            return std::make_pair(neighbors[1], vertices[2]);
+        }
+        return std::make_pair(neighbors[2], vertices[0]);
+    }
+    /// Previous triangle adjacent to a vertex (counter-clockwise)
+    /// @returns pair of previous triangle and the other vertex of a common edge
+    std::pair<TriInd, VertInd> prev(const VertInd i) const
+    {
+        assert(vertices[0] == i || vertices[1] == i || vertices[2] == i);
+        if(vertices[0] == i)
+            return std::make_pair(neighbors[2], vertices[2]);
+        if(vertices[1] == i)
+            return std::make_pair(neighbors[0], vertices[0]);
+        return std::make_pair(neighbors[1], vertices[1]);
+    }
+
+    bool containsVertex(const VertInd i) const
+    {
+        return std::find(vertices.begin(), vertices.end(), i) != vertices.end();
     }
 };
 
@@ -350,27 +379,27 @@ CDT_EXPORT CDT_INLINE_IF_HEADER_ONLY Index opoVrt(Index neighborIndex);
 
 /// Index of triangle's neighbor opposed to a vertex
 CDT_EXPORT CDT_INLINE_IF_HEADER_ONLY Index
-opposedTriangleInd(const Triangle& tri, VertInd iVert);
+opposedTriangleInd(const VerticesArr3& vv, VertInd iVert);
 
 /// Index of triangle's neighbor opposed to an edge
 CDT_INLINE_IF_HEADER_ONLY Index
-opposedTriangleInd(const Triangle& tri, VertInd iVedge1, VertInd iVedge2);
+edgeNeighborInd(const VerticesArr3& vv, VertInd iVedge1, VertInd iVedge2);
 
 /// Index of triangle's vertex opposed to a triangle
 CDT_EXPORT CDT_INLINE_IF_HEADER_ONLY Index
-opposedVertexInd(const Triangle& tri, TriInd iTopo);
+opposedVertexInd(const NeighborsArr3& nn, TriInd iTopo);
 
-/// If triangle has a given neighbor return neighbor-index, throw otherwise
+/// If triangle has a given vertex return vertex-index
 CDT_EXPORT CDT_INLINE_IF_HEADER_ONLY Index
-neighborInd(const Triangle& tri, TriInd iTnbr);
-
-/// If triangle has a given vertex return vertex-index, throw otherwise
-CDT_EXPORT CDT_INLINE_IF_HEADER_ONLY Index
-vertexInd(const Triangle& tri, VertInd iV);
+vertexInd(const VerticesArr3& vv, VertInd iV);
 
 /// Given triangle and a vertex find opposed triangle
 CDT_EXPORT CDT_INLINE_IF_HEADER_ONLY TriInd
 opposedTriangle(const Triangle& tri, VertInd iVert);
+
+/// Given triangle and an edge find neighbor sharing the edge
+CDT_EXPORT CDT_INLINE_IF_HEADER_ONLY TriInd
+edgeNeighbor(const Triangle& tri, VertInd iVedge1, VertInd iVedge2);
 
 /// Given two triangles, return vertex of first triangle opposed to the second
 CDT_EXPORT CDT_INLINE_IF_HEADER_ONLY VertInd
@@ -395,6 +424,9 @@ CDT_EXPORT T distance(const V2d<T>& a, const V2d<T>& b);
 /// Squared distance between two 2D points
 template <typename T>
 CDT_EXPORT T distanceSquared(const V2d<T>& a, const V2d<T>& b);
+
+/// Check if any of triangle's vertices belongs to a super-triangle
+CDT_INLINE_IF_HEADER_ONLY bool touchesSuperTriangle(const Triangle& t);
 
 } // namespace CDT
 
